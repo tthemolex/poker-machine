@@ -1,0 +1,42 @@
+Id	Description	Qty	Unit	Designators
+1	Cable, 1 x 0.5 mm²	0.1	m	W_SW
+2	Cable, 2 x 0.14 mm²	1.4	m	W_3V3, W_BTN_GO, W_BTN_SET, W_ENDSTOP, W_IRTX_EXIT, W_IRTX_LOAD, W_LED
+3	Cable, 2 x 0.25 mm²	0.7	m	W_130, W_N20
+4	Cable, 2 x 0.5 mm²	0.76	m	W_BAT, W_BUCKIN, W_BUCKOUT, W_CHG, W_VIN, W_VM_RACK, W_VM_TURN
+5	Cable, 3 x 0.14 mm²	1.53	m	W_DRV, W_HALL, W_IR_EXIT, W_IR_LOAD, W_RACK, W_SERVO, W_TURN, W_VBAT
+6	Cable, 4 x 0.14 mm²	0.4	m	W_DRV_PWR, W_OLED, W_RACK_LOGIC, W_TURN_LOGIC
+7	Cable, 4 x 0.25 mm²	0.5	m	W_COIL_RACK, W_COIL_TURN
+8	Ceramic capacitor 100 nF, MID to BOT (ADC filter)	1		DIV
+9	Ceramic capacitor 100 nF, across motor terminals (EMI)	2		M130, N20
+10	Connector, 12 V distribution, Wago 221 / solder bus, switched 12 V, 2 pins	1		PWR12
+11	Connector, 12 mm momentary button, GO, base wall, 2 pins	1		BTN_GO
+12	Connector, 12 mm momentary button, SET, base wall, 2 pins	1		BTN_SET
+13	Connector, 130-size DC motor, launcher wheel, turret, 2 pins	1		M130
+14	Connector, 3.3 V logic distribution, from ESP32 3V3 pin, 2 pins	1		BUS3V3
+15	Connector, 5 V distribution, solder bus, 2 pins	1		PWR5
+16	Connector, 5 mm LED, status, base wall, 2 pins	1		LED
+17	Connector, A3144 hall switch, turret home, base deck (magnet in turntable at 0 deg), 3 pins	1		HALL
+18	Connector, Battery sense divider, 100k (top) / 22k (bottom) + 100 nF, 3 pins	1		DIV
+19	Connector, DRV8833 module, VM = 5 V (max 10.8 V!), 11 pins	1		DRV
+20	Connector, ESP32 DevKit V1, WROOM-32, 30-pin, 22 pins	1		ESP32
+21	Connector, IR break-beam emitter, launcher entry, turret, 2 pins	1		IRTX_EXIT
+22	Connector, IR break-beam emitter, loader, turret, 2 pins	1		IRTX_LOAD
+23	Connector, IR break-beam receiver, launcher entry, turret (open collector), 3 pins	1		IRRX_EXIT
+24	Connector, IR break-beam receiver, loader, turret (open collector), 3 pins	1		IRRX_LOAD
+25	Connector, MG90S servo, pusher, turret, 3 pins	1		SERVO
+26	Connector, Microswitch, rack bottom, turret, 3 pins	1		ENDSTOP
+27	Connector, Mini rocker switch, main power, base wall, SPST min. 3 A, 2 pins	1		SW
+28	Connector, Mini560 buck, 12 V to 5.0 V, 3 A, 4 pins	1		BUCK
+29	Connector, N20 gear motor ~100 rpm, loader feed roller, turret, 2 pins	1		N20
+30	Connector, NEMA17 + integrated T8x8 leadscrew, rack lift, turret, 4 pins	1		M_RACK
+31	Connector, NEMA17 pancake stepper, turret drive, base, GT2 20T pulley, 4 pins	1		M_TURN
+32	Connector, Panel DC jack 5.5x2.1, charge input on base wall, 2 pins	1		JACK
+33	Connector, SSD1306 0.96 in OLED, 128x64 I2C 0x3C, 3.3 V, base wall (optional), 4 pins	1		OLED
+34	Connector, TMC2209 StepStick, rack driver, 8 usteps (MS1=MS2=GND), 13 pins	1		TMC_RACK
+35	Connector, TMC2209 StepStick, turret driver, 16 usteps (MS1=MS2=VIO), 13 pins	1		TMC_TURN
+36	Connector, TalentCell YB1206000-USB, 3S Li-ion 11.1 V 6 Ah, 36 W max (base cradle), 4 pins	1		BAT
+37	Electrolytic capacitor 100 uF 25 V, across VM / PGND, at the driver pins	2		TMC_RACK, TMC_TURN
+38	Resistor 10 k, OUT to 3V3 pull-up (stronger than the internal one)	1		HALL
+39	Resistor 100 k 1%, TOP to MID	1		DIV
+40	Resistor 22 k 1%, MID to BOT	1		DIV
+41	Resistor 330 R, in series with the LED anode wire	1		W_LED

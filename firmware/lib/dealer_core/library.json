@@ -1,0 +1,10 @@
+{
+  "name": "dealer_core",
+  "version": "1.0.0",
+  "description": "Hardware-independent poker dealer logic: rack bookkeeping, RNG, game state machine, aiming, battery, buttons, LED patterns.",
+  "frameworks": "*",
+  "platforms": "*",
+  "build": {
+    "flags": ["-Wall", "-Wextra", "-Werror"]
+  }
+}

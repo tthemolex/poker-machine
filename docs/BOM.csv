@@ -1,0 +1,47 @@
+part,qty,spec,price_pln,price_eur,example_source,category
+nema17_pancake,1,"NEMA17 pancake stepper 42x42x20-23 mm, 1.8 deg, ~1 A, 5 mm D-shaft (e.g. 17HS08-1004S)",35,8.20,AliExpress (StepperOnline 17HS08),motion
+nema17_t8_leadscrew,1,"NEMA17 40 mm stepper with integrated T8x8 (4-start) leadscrew, 100 mm long (150 mm does not fit, DECISIONS D-10) + brass T8 flange nut 22 mm, 1.5 A",65,15.20,AliExpress / Allegro (17HS4401 T8x8 150 mm),motion
+rod_8mm,2,"8 mm hardened chrome steel rod, 2 pieces cut to 157 mm",20,4.70,AliExpress / Allegro (linear shaft 8 mm),motion
+lm8uu,4,LM8UU linear ball bearing 8x15x24 mm (2 per rod),12,2.80,AliExpress / Botland,motion
+lazy_susan_120,1,"Round aluminium lazy susan bearing 120 mm OD, 70 mm ID, 9.5 mm thick",25,5.90,AliExpress (VXB-style round turntable bearing 120 mm),motion
+gt2_pulley_20t,1,"GT2 20T aluminium pulley, 5 mm bore, for 10 mm belt (wide teeth), top flange removed (file/lathe off) to mesh the belt-on-hub ring",8,1.90,AliExpress / Botland,motion
+gt2_belt,1,"GT2 6 mm open belt, 400 mm cut length glued teeth-out on the printed ring hub to form the 200T turret ring",10,2.30,AliExpress / Allegro (GT2 belt 6 mm per metre),motion
+mg90s_servo,1,"MG90S metal-gear micro servo, 4.8-6 V",18,4.20,Botland / AliExpress,motion
+n20_motor,1,"N20 micro gear motor ~100 rpm at 5 V (6 V type), 3 mm D-shaft",15,3.50,AliExpress / Botland,motion
+motor_130,1,"130-size brushed DC motor 3-6 V (run at 5 V), 2 mm shaft",5,1.20,Botland / AliExpress,motion
+launcher_wheel,1,"Rubber drive wheel 24 mm OD x 10 mm wide, 2 mm bore (launcher, on the 130 motor)",5,1.2,AliExpress (130 motor rubber wheel),motion
+roller,3,Rubber rollers 3 mm bore: 2x feed roller 14 mm OD x 8 mm + 1x launcher pinch idler 12 mm OD x 12 mm (or printed hubs + rubber tube),15,3.5,AliExpress (N20 rubber wheel),motion
+pusher_blade,1,"0.5 mm spring/stainless steel shim stock, blade 24 x 50.5 mm (cut, deburr, round corners)",10,2.30,Allegro (blacha nierdzewna 0.5 mm) / hardware store,motion
+spring,1,"Compression spring 5 mm OD x 10 mm, 0.6 mm wire (launcher idler preload); buy an assortment",10,2.3,AliExpress (spring assortment box),motion
+shaft_3mm,4,"3 mm silver-steel rod, cut: feed shaft 98.5 mm, idler axle 17.6 mm, 2 idler pivot pins 5.7 mm (one 330 mm rod is enough)",8,1.90,AliExpress / Allegro (silver steel 3 mm),motion
+esp32_devkit,1,"ESP32 DevKit V1, ESP-WROOM-32, 30-pin, USB",30,7.00,AliExpress / Botland,electronics
+tmc2209,2,"TMC2209 StepStick module (BTT/FYSETC style, 0.11 ohm sense), standalone STEP/DIR",50,11.70,AliExpress (BIGTREETECH TMC2209 V1.3),electronics
+drv8833,1,"DRV8833 dual H-bridge module, 2.7-10.8 V, 1.2 A per channel",8,1.90,AliExpress / Botland,electronics
+mini560_buck,1,"Mini560 synchronous buck 12 V -> 5 V fixed, 3 A",10,2.30,AliExpress (Mini560 5V),electronics
+battery_talentcell,1,"TalentCell YB1206000-USB, 3S Li-ion 11.1 V 6000 mAh, 12 V DC out 5.5x2.1, 36 W, with 12.6 V charger",230,53.90,Amazon.de / Allegro (TalentCell YB1206000-USB),power
+dc_jack_panel,1,"5.5x2.1 mm panel-mount DC socket, M8 thread + nut",4,0.90,Botland / AliExpress,power
+rocker_switch,1,"Mini rocker switch KCD11 SPST, 3 A+ @ 12 V DC, 13 x 8.7 mm cut-out",3,0.70,Botland / AliExpress,power
+button_12mm,2,"12 mm flush metal momentary push button, normally open",8,1.90,Botland / AliExpress,ui
+led_5mm,1,5 mm LED (any colour) + panel holder optional,1,0.20,Botland,ui
+ssd1306_oled,1,"0.96 in SSD1306 OLED 128x64, I2C (4-pin), 3.3 V (optional)",15,3.50,AliExpress / Botland,ui
+a3144_hall,1,"A3144 unipolar hall switch, TO-92S",2,0.50,AliExpress / Botland,sensors
+magnet_6x3,1,Neodymium disc magnet 6x3 mm N35+,2,0.50,AliExpress / Allegro,sensors
+ir_breakbeam,2,"3 mm IR break-beam sensor pair (emitter + receiver), 3.3-5 V, open-collector output (Adafruit 2167 style)",30,7.00,AliExpress / Botland,sensors
+microswitch,1,"Mini lever microswitch 12.8 x 5.8 x 6.5 mm (KW10/SS-5GL style), NO/NC",3,0.70,Botland / AliExpress,sensors
+m3_screw,60,"M3 socket head screws, ~60 total M3x6..M3x12 (+ a few M3x16/20), A2 stainless assortment",20,4.70,AliExpress / hardware store (assortment box),hardware
+m3_insert,40,"M3 x 5.7 mm brass heat-set inserts, OD 4.6 mm (~35 used)",15,3.50,AliExpress / Allegro,hardware
+m3_csk_screw,18,M3x8 countersunk screws (turntable to lazy susan / ring hub),5,1.20,hardware store / AliExpress,hardware
+m2_screw,4,"M2 self-tapping / M2x6 screws (servo mount, pusher blade)",3,0.70,hardware store / AliExpress,hardware
+m3_nut,20,M3 hex nuts (spares for clamps),4,0.90,hardware store,hardware
+m8_nut,2,"M8 hex nuts (steel), ballast in the hopper weight",2,0.50,hardware store,hardware
+resistors,1,"Resistor kit: 100k 1%, 22k 1%, 10k, 330R (1/4 W)",5,1.20,Botland,electronics
+capacitors,1,"2x 100 uF 25 V electrolytic (driver VM), 3x 100 nF ceramic (motor EMI + ADC filter)",5,1.20,Botland,electronics
+dc_plug_cable,2,5.5x2.1 mm male DC plug pigtails (battery output + battery charge input),8,1.90,AliExpress / Botland,power
+wire_power,1,"Silicone wire 20 AWG (0.5 mm2) red + black, 1 m each",12,2.80,AliExpress / Botland,wiring
+wire_signal,1,"Silicone/ribbon wire 26 AWG (0.14 mm2) assorted colours, ~5 m total",15,3.50,AliExpress / Botland,wiring
+connectors_dupont_jst,1,Dupont / JST-XH 2.54 mm connector kit + female headers for ESP32 and drivers,20,4.70,AliExpress,wiring
+wago_221,2,Wago 221-413 3-way lever connectors (12 V / 5 V distribution),6,1.40,hardware store,wiring
+heat_shrink,1,Heat-shrink tube assortment,8,1.90,AliExpress,wiring
+perfboard,1,"Perfboard ~50x70 mm for drivers, divider and distribution",4,0.90,Botland,electronics
+filament_petg,1,"PETG 1.75 mm, ~0.6 kg used (base, turret, frames, shell)",50,11.70,Allegro (Devil Design / Spectrum PETG 1 kg),filament
+filament_pla,1,"PLA 1.75 mm, ~60 g used (rack combs + rack plates); any good-quality PLA",10,2.30,Allegro (Devil Design / Spectrum PLA),filament

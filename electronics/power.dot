@@ -1,0 +1,42 @@
+// Power tree. Render: dot -Tsvg power.dot -o power.svg && dot -Tpng -Gdpi=150 power.dot -o power.png
+// Currents are PEAK budget values from POWER.md (not simultaneous unless noted there).
+digraph power {
+  rankdir=LR;
+  graph [fontname="Helvetica", fontsize=11, nodesep=0.25, ranksep=0.6, label="Poker dealer power tree (peak budget per load, see POWER.md)", labelloc=t];
+  node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled", fillcolor="#f4f4f4"];
+  edge  [fontname="Helvetica", fontsize=9];
+
+  charger [label="TalentCell charger\n12.6 V DC", fillcolor="#e8e8ff"];
+  jack    [label="Panel DC jack 5.5x2.1\n(base wall)", fillcolor="#e8e8ff"];
+  bat     [label="TalentCell YB1206000-USB\n3S Li-ion 11.1 V nominal, 6 Ah (66.6 Wh)\n9.0-12.6 V, 3 A / 36 W max, own BMS", fillcolor="#ffe9b3"];
+  sw      [label="Main rocker switch", fillcolor="#ffe9b3"];
+  rail12  [label="12 V switched rail\n(10.5-12.6 V)\nsum of peaks 2.85 A", shape=box, style="filled", fillcolor="#ffd0d0"];
+
+  tmct [label="TMC2209 turret\nVM + 100 uF\n0.8 A RMS coil"];
+  tmcr [label="TMC2209 rack\nVM + 100 uF\n0.8 A RMS coil"];
+  mt   [label="NEMA17 pancake\n(turret)\n0.70 A @12 V peak"];
+  mr   [label="NEMA17 + T8 leadscrew\n(rack)\n0.70 A @12 V peak"];
+  div  [label="VBAT divider 100k/22k\n0.1 mA -> GPIO34"];
+  buck [label="Mini560 buck\n12 V -> 5.0 V, 3 A\neta ~ 90 %\n1.45 A @12 V peak in", fillcolor="#d0ffd0"];
+  rail5 [label="5 V rail\nsum of peaks 3.12 A\nfirmware-reachable 2.52 A", style="filled", fillcolor="#d0ffd0"];
+
+  esp  [label="ESP32 DevKit VIN\n0.25 A peak"];
+  reg  [label="ESP32 3V3 LDO\n(logic only)"];
+  logic [label="3V3 loads: IR receivers x2,\nOLED, TMC VIO x2\n~0.03 A"];
+  servo [label="MG90S pusher\n0.70 A stall"];
+  drv  [label="DRV8833 (VM 5 V)"];
+  n20  [label="N20 loader motor\n0.60 A stall"];
+  m130 [label="130 launcher motor\n1.50 A start"];
+  small [label="IR emitters x2, A3144\n0.044 A"];
+
+  charger -> jack -> bat [label="charge"];
+  bat -> sw [label="DC out", penwidth=2];
+  sw -> rail12 [penwidth=2];
+  rail12 -> tmct; rail12 -> tmcr; rail12 -> div;
+  rail12 -> buck [penwidth=2];
+  tmct -> mt; tmcr -> mr;
+  buck -> rail5 [penwidth=2];
+  rail5 -> esp -> reg -> logic;
+  rail5 -> servo; rail5 -> drv; rail5 -> small;
+  drv -> n20 [label="ch A"]; drv -> m130 [label="ch B"];
+}

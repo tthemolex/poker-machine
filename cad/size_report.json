@@ -1,0 +1,89 @@
+{
+  "footprint_d": 195.0,
+  "max_radius": 97.5,
+  "height": 207.5,
+  "max_bbox_xy": 195.0,
+  "limit_d": 200.0,
+  "limit_h": 220.0,
+  "stretch_d": 170.0,
+  "stretch_h": 180.0,
+  "gap_to_stretch_d": 25.0,
+  "gap_to_stretch_h": 27.5,
+  "margin_d": 5.0,
+  "margin_h": 12.5,
+  "pass_hard": true,
+  "angles": [
+    0,
+    45,
+    90,
+    135,
+    180,
+    225,
+    270,
+    315
+  ],
+  "rack_positions": [
+    0,
+    81.0
+  ],
+  "drivers_radius": [
+    [
+      "base_shell",
+      97.5
+    ],
+    [
+      "ui_bezel",
+      97.5
+    ],
+    [
+      "turntable",
+      97.5
+    ],
+    [
+      "burn_tray",
+      97.5
+    ],
+    [
+      "turret_shell",
+      97.5
+    ],
+    [
+      "top_cap",
+      97.5
+    ],
+    [
+      "v_rocker_switch",
+      97.29
+    ],
+    [
+      "v_button_go",
+      97.15
+    ]
+  ],
+  "drivers_height": [
+    [
+      "top_cap",
+      207.5
+    ],
+    [
+      "hopper_lid",
+      207.5
+    ],
+    [
+      "rack_comb_px",
+      205.0
+    ],
+    [
+      "rack_comb_nx",
+      205.0
+    ],
+    [
+      "rack_top_plate",
+      205.0
+    ],
+    [
+      "rail_frame",
+      205.0
+    ]
+  ]
+}

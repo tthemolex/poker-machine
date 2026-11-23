@@ -1,0 +1,36 @@
+# Canonical vendor-part names (one per line, "name  qty  note").
+# cad/vendor/vendor_parts.csv (name,qty,description) must use exactly these names in its
+# `name` column; docs/BOM.csv uses the same names in its `part` column.
+# tools/check_bom.py matches exact names first and falls back to fuzzy matching.
+# qty = number in one machine (BOM qty must be >= the modelled qty).
+nema17_pancake        1   turret stepper, NEMA17 ~20-23 mm body, 5 mm shaft
+nema17_t8_leadscrew   1   rack stepper, NEMA17 40 mm body with integrated T8x8 leadscrew + brass nut
+rod_8mm               2   rack guide rods, 8 mm hardened steel
+lm8uu                 2   linear bearings on the guide rods (use 4 if modelled as 2 per rod)
+lazy_susan_120        1   120 mm round aluminium lazy susan bearing, ID 70, 9.5 mm thick
+gt2_pulley_20t        1   GT2 20T pulley, 5 mm bore, 6 mm belt width, on the turret stepper
+gt2_belt              1   GT2 6 mm open belt, 400 mm, glued teeth-out on the printed ring hub = the 200T turret ring
+mg90s_servo           1   pusher servo
+n20_motor             1   loader feed roller motor, N20 6V ~300 rpm
+motor_130             1   launcher motor, 130-size DC motor
+launcher_wheel        2   rubber/silicone wheels: launcher drive wheel + spring-loaded idler (qty = number modelled)
+roller                2   loader feed roller + pinch roller, rubber tyre (qty = number modelled)
+esp32_devkit          1   ESP32 DevKit V1 (WROOM-32, 30-pin)
+tmc2209               2   TMC2209 StepStick driver modules
+drv8833               1   DRV8833 dual H-bridge module
+mini560_buck          1   Mini560 12V -> 5V 3A buck module
+battery_talentcell    1   TalentCell YB1206000-USB 3S 11.1V 6Ah, 145x85x28 mm
+dc_jack_panel         1   5.5x2.1 mm panel-mount DC jack (charge input)
+rocker_switch         1   mini rocker switch (main power)
+button_12mm           2   12 mm momentary panel buttons (GO, SET)
+led_5mm               1   5 mm status LED (+ 330R resistor, in BOM)
+ssd1306_oled          1   0.96" SSD1306 128x64 I2C OLED
+a3144_hall            1   A3144 hall sensor (turret home)
+magnet_6x3            1   6x3 mm neodymium magnet (turret home)
+ir_breakbeam          2   3 mm/5 mm IR break-beam pair (emitter+receiver), loader + launcher entry
+microswitch           1   rack bottom endstop microswitch
+pusher_blade          1   0.5 mm stainless steel pusher blade (cut strip)
+spring                1   launcher idler spring (add qty if more are modelled)
+shaft_3mm             4   3 mm silver-steel shafts: feed shaft, idler axle, 2 idler pivot pins
+m3_screw              -   M3 socket head screws, assorted lengths (qty = total modelled)
+m3_insert             -   M3 x 5.7 heat-set inserts (qty = total modelled)

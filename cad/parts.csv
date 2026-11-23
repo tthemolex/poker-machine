@@ -1,0 +1,30 @@
+part,file,qty,material,supports,orientation,notes
+base_shell,base_shell.scad,1,PETG,none,upright floor on bed,UI cut is a notch from the top edge; door rebate ceiling is a short bridge (<=5.5 mm); rocker hole top edge bridges 13 mm
+battery_door,battery_door.scad,1,PETG,none,flat outside face on bed,4x M3 CSK into floor inserts; battery drops out downward
+base_deck,base_deck.scad,1,PETG,none,upside down (top face on bed),pancake NEMA standoffs point up in print
+hall_post,hall_post.scad,1,PETG,none,upright,pegs into the deck; A3144 glued in the groove
+ui_bezel,ui_bezel.scad,1,PETG black,none,upright (installed Z up),OLED window + 2x 12 mm buttons + LED; radial holes are small (<=12 mm) bridges
+turntable,turntable.scad,1,PETG,none,upside down (top face on bed),200T ring hub underneath (GT2 belt glued teeth-out); CSK holes print as upward cones; magnet pocket
+rack_comb,rack_comb.scad,2,PLA (fine nozzle 0.4/0.12 layer),none,lying on outer face fins vertical,fins 0.9 mm = documented exception to the 1.2 mm wall rule (D-01); both combs identical (one turned 180 deg)
+rack_bottom_plate,rack_bottom_plate.scad,1,PLA,none,flat,1.2 mm; glued (CA) into the comb rebates
+rack_top_plate,rack_top_plate.scad,1,PLA,none,flat,1.2 mm; glued (CA) into the comb rebates
+rack_carriage,rack_carriage.scad,1,PETG,none,upright (bores vertical),4x LM8UU pressed in; 4x M3 thread-forming into comb pilot holes
+rack_nut_arm,rack_nut_arm.scad,1,PETG,none,arm flat on bed flange vertical,4 inserts for the T8 flange nut
+rack_motor_mount,rack_motor_mount.scad,1,PETG,none,upright,top plate bridges 47 mm between the legs (PETG bridge OK)
+rail_frame,rail_frame.scad,1,PETG,none,lying on web outer face,rod holes horizontal Ø8.1 (small top overhang ok); microswitch pocket
+loader_frame,loader_frame.scad,1,PETG,none,upright bottom lip on bed,ledges and tabs have 45 deg under-chamfers; N20 cradle is an open-top trough
+hopper_body,hopper_body.scad,1,PETG,none,upright floor on bed,load plane = floor top = Z_LOAD; slotted gate fixings
+hopper_gate,hopper_gate.scad,1,PETG,none,lying on its back face,sets the 0.45 mm throat; +-1.5 mm adjustment in slotted holes; IR emitter pocket
+hopper_weight,hopper_weight.scad,1,PETG 100% infill,none,flat,2 hex pockets for M8 nuts as ballast
+hopper_lid,hopper_lid.scad,1,PETG,none,flat top face on bed,drops into the top cap
+loader_coupler,loader_coupler.scad,1,PETG,none,upright,N20 D-shaft to 3 mm shaft; 2x M3 grub screws
+pusher_guide,pusher_guide.scad,1,PETG,none,upright (wing bottoms on bed),roof and blade floor are bridges <= 28 mm
+pusher_slider,pusher_slider.scad,1,PETG,none,upside down (flange on bed teeth up),m1 gear rack; blade fixed with 2x M2
+pusher_pinion,pusher_pinion.scad,1,PETG,none,flat,m1 15T involute; pressed on MG90S spline + horn screw
+servo_mount,servo_mount.scad,1,PETG,none,lying on its -X face,screws up into the pusher-guide wings
+launcher_frame,launcher_frame.scad,1,PETG,none,upside down (top plate on bed),45 deg wedge feet; motor cheek holes bridge 20 mm
+launcher_floor,launcher_floor.scad,1,PETG,none,upside down (top face on bed),entry floor top = Z_EJECT; idler pivot lugs; exit IR receiver cup
+idler_arm,idler_arm.scad,1,PETG,none,standing on lever-end face,bell crank; 3 mm axle pressed in
+burn_tray,burn_tray.scad,1,PETG,none,upright,drawer; curved front is a flush patch of the turret shell
+turret_shell,turret_shell.scad,1,PETG,none,upside down (top rim on bed),front notch prints open-ended; wedge tabs at 45 deg
+top_cap,top_cap.scad,1,PETG,none,upside down (top on bed),45 deg chamfer + r4 printable fillet; lid ledge is a 1.5 mm overhang

@@ -1,0 +1,20 @@
+signal,gpio,direction,connects_to,notes
+TURN_STEP,25,out,TMC2209 turret STEP,turret driver 16 usteps (MS1=MS2=VIO)
+TURN_DIR,26,out,TMC2209 turret DIR,swap one coil pair if the turret turns the wrong way
+RACK_STEP,27,out,TMC2209 rack STEP,rack driver 8 usteps (MS1=MS2=GND)
+RACK_DIR,14,out,TMC2209 rack DIR,
+STEP_EN,13,out,TMC2209 turret EN + TMC2209 rack EN,shared enable; active LOW; HIGH = motors off (idle)
+FEED_IN1,32,out,DRV8833 AIN1,loader N20 PWM
+FEED_IN2,33,out,DRV8833 AIN2,loader N20 direction (LOW = feed)
+LAUNCH,19,out,DRV8833 BIN1 (IN3),launcher 130 motor PWM; BIN2 (IN4) tied to GND
+PUSHER,23,out,MG90S signal,servo powered from 5 V rail; detached when idle
+IR_LOAD,15,in,IR receiver OUT (loader),INPUT_PULLUP; LOW = beam blocked; strapping pin (pull-up = default boot level)
+IR_EXIT,4,in,IR receiver OUT (launcher entry),INPUT_PULLUP; LOW = beam blocked
+HOME_TURN,16,in,A3144 OUT,INPUT_PULLUP + 10k to 3V3; LOW at turret 0 deg (magnet)
+HOME_RACK,17,in,rack microswitch NO (COM to GND),INPUT_PULLUP; LOW at rack bottom
+BTN_GO,18,in,GO button to GND,INPUT_PULLUP; LOW = pressed
+BTN_SET,5,in,SET button to GND,INPUT_PULLUP; LOW = pressed; strapping pin (high at boot = OK)
+LED,2,out,status LED via 330R to GND,strapping pin; LED to GND keeps it low at boot (also the on-board LED)
+VBAT,34,in,battery divider mid-point (100k/22k),input-only ADC1 pin; no pull-up; 12.6 V -> 2.27 V
+OLED_SDA,21,io,SSD1306 SDA,I2C 0x3C; module has its own pull-ups
+OLED_SCL,22,out,SSD1306 SCL,I2C 400 kHz
