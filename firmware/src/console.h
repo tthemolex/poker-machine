@@ -5,6 +5,8 @@
 #include "machine.h"
 
 namespace console {
+// Service / no-motion mode: every command that would move or power a motor is refused.
+void setServiceMode(bool on);
 // Read serial input; run a complete line. Returns true if the rack map changed.
 bool poll(Machine& m, const dealer::Game& g);
 }  // namespace console

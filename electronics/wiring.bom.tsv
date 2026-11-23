@@ -21,8 +21,8 @@ Id	Description	Qty	Unit	Designators
 20	Connector, ESP32 DevKit V1, WROOM-32, 30-pin, 22 pins	1		ESP32
 21	Connector, IR break-beam emitter, launcher entry, turret, 2 pins	1		IRTX_EXIT
 22	Connector, IR break-beam emitter, loader, turret, 2 pins	1		IRTX_LOAD
-23	Connector, IR break-beam receiver, launcher entry, turret (open collector), 3 pins	1		IRRX_EXIT
-24	Connector, IR break-beam receiver, loader, turret (open collector), 3 pins	1		IRRX_LOAD
+23	Connector, IR break-beam receiver, launcher entry, turret (open collector, VCC 5 V), 3 pins	1		IRRX_EXIT
+24	Connector, IR break-beam receiver, loader, turret (open collector, VCC 5 V), 3 pins	1		IRRX_LOAD
 25	Connector, MG90S servo, pusher, turret, 3 pins	1		SERVO
 26	Connector, Microswitch, rack bottom, turret, 3 pins	1		ENDSTOP
 27	Connector, Mini rocker switch, main power, base wall, SPST min. 3 A, 2 pins	1		SW
@@ -36,7 +36,8 @@ Id	Description	Qty	Unit	Designators
 35	Connector, TMC2209 StepStick, turret driver, 16 usteps (MS1=MS2=VIO), 13 pins	1		TMC_TURN
 36	Connector, TalentCell YB1206000-USB, 3S Li-ion 11.1 V 6 Ah, 36 W max (base cradle), 4 pins	1		BAT
 37	Electrolytic capacitor 100 uF 25 V, across VM / PGND, at the driver pins	2		TMC_RACK, TMC_TURN
-38	Resistor 10 k, OUT to 3V3 pull-up (stronger than the internal one)	1		HALL
-39	Resistor 100 k 1%, TOP to MID	1		DIV
-40	Resistor 22 k 1%, MID to BOT	1		DIV
-41	Resistor 330 R, in series with the LED anode wire	1		W_LED
+38	Resistor 10 k, EN to VIO (3V3) pull-up for the shared EN line, keeps both drivers off during ESP32 reset / flashing	1		TMC_TURN
+39	Resistor 10 k, OUT to 3V3 pull-up (stronger than the internal one)	1		HALL
+40	Resistor 100 k 1%, TOP to MID	1		DIV
+41	Resistor 22 k 1%, MID to BOT	1		DIV
+42	Resistor 330 R, in series with the LED anode wire	1		W_LED

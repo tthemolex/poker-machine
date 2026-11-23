@@ -32,6 +32,7 @@ enum class LedPattern : uint8_t {
   Busy,        // moving cards: solid on
   Fault,       // fault, waiting for GO: 5 Hz fast blink
   Count,       // n blinks (150 ms on / 150 ms off) after a SET press, then off
+  Service,     // service / no-motion mode: on, with a 200 ms gap every 2 s
 };
 
 // LED level for a pattern, `ms` since the pattern started. `n` is used by Count.

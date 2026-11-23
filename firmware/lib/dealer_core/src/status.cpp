@@ -31,6 +31,7 @@ bool ledLevel(LedPattern p, uint32_t ms, uint8_t n) {
     }
     case LedPattern::InHand: return (ms % 1000u) < 500u;
     case LedPattern::Fault: return (ms % 200u) < 100u;
+    case LedPattern::Service: return (ms % 2000u) < 1800u;
     case LedPattern::Count:
       if (ms >= 300u * n) return false;
       return (ms % 300u) < 150u;

@@ -13,6 +13,8 @@ float rackEjectMm(int shelf) {
 
 float rackLoadMm(int shelf) { return rackEjectMm(shelf) + geom::STATION_OFFSET; }
 
+float rackNoShelfAtLoadMm() { return rackEjectMm(geom::SHELF_COUNT - 1); }
+
 int32_t rackMmToSteps(float mm) {
   return static_cast<int32_t>(lroundf(mm * geom::RACK_STEPS_PER_MM));
 }
@@ -40,7 +42,7 @@ float boardDeg(uint8_t slot) {
                  (static_cast<float>(slot) - 2.0f) * static_cast<float>(geom::BOARD_SPREAD_DEG));
 }
 
-float burnDeg() { return normDeg(static_cast<float>(geom::BOARD_DEG)); }
+float burnDeg() { return normDeg(static_cast<float>(geom::BURN_DEG)); }
 
 int32_t turretDegToSteps(float deg) {
   return static_cast<int32_t>(

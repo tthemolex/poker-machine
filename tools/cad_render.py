@@ -12,20 +12,22 @@ from cad_common import CAD, JOBS, ROOT, printed_parts, run_scad  # noqa: E402
 OUT = ROOT / "renders"
 SIZE = "1600,1200"
 SCHEME = "Tomorrow"
-SHELLS = '["turret_shell","top_cap","hopper_lid","burn_tray"]'
+SHELLS = '["turret_shell","top_cap","hopper_lid","slot_panel"]'
 VIEWS = {
     # name: (defines, camera tx,ty,tz,rx,ry,rz,dist)
-    "assembly_front_exterior": ([], "0,0,100,72,0,25,640"),       # exit slot + burn drawer (+Y side)
-    "assembly_back_ui": ([], "0,0,90,72,0,205,640"),               # UI bezel side (-Y)
+    "assembly_front_exterior": ([], "0,0,100,72,0,205,640"),      # hero: exit slot side (+Y)
+    "assembly_back_ui": ([], "0,0,90,72,0,25,640"),                # UI bezel side (-Y)
+    "assembly_base_power": ([], "0,40,30,78,0,180,520"),          # rocker (140 deg) + charge jack (40 deg)
     "assembly_top_closed": ([], "0,0,100,35,0,335,640"),
     "assembly_open_iso": ([f"hide={SHELLS}", "rack_pos=30"], "0,0,115,62,0,40,720"),
     "assembly_open_back": ([f"hide={SHELLS}", "rack_pos=30"], "0,0,120,62,0,215,560"),
     "assembly_open_top": ([f'hide={SHELLS[:-1]},"hopper_weight","cards_hopper"]', "rack_pos=81"], "0,0,120,0,0,0,520"),
-    "exploded": (["explode=1", "rack_pos=30"], "0,0,175,74,0,30,1450"),
+    "exploded": (["explode=1", "rack_pos=30"], "0,0,150,76,0,30,1750"),
     "section_rack_pusher_launcher": (["section=true", "rack_pos=30"], "0,0,110,90,0,90,560"),
     "section_detail_stations": (["section=true", "rack_pos=30"], "0,20,122,90,0,90,240"),
     "section_rack_top": (["section=true", "rack_pos=81"], "0,0,110,90,0,90,560"),
     "base_electronics": (["only_base=true"], "0,-20,10,48,0,20,430"),
+    "harness_route": ([f'hide={SHELLS[:-1]},"hopper_body","hopper_gate","hopper_weight","cards_hopper","card_load","pusher_guide","pusher_slider","v_pusher_blade","servo_mount","v_mg90s","pusher_pinion"]', "rack_pos=81"], "0,-30,80,60,0,225,600"),
 }
 
 

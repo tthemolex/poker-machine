@@ -22,12 +22,12 @@ digraph power {
 
   esp  [label="ESP32 DevKit VIN\n0.25 A peak"];
   reg  [label="ESP32 3V3 LDO\n(logic only)"];
-  logic [label="3V3 loads: IR receivers x2,\nOLED, TMC VIO x2\n~0.03 A"];
+  logic [label="3V3 loads:\nOLED, TMC VIO x2\n~0.03 A"];
   servo [label="MG90S pusher\n0.70 A stall"];
   drv  [label="DRV8833 (VM 5 V)"];
   n20  [label="N20 loader motor\n0.60 A stall"];
   m130 [label="130 launcher motor\n1.50 A start"];
-  small [label="IR emitters x2, A3144\n0.044 A"];
+  small [label="IR beams x2 (emitter + receiver),\nA3144\n0.044 A"];
 
   charger -> jack -> bat [label="charge"];
   bat -> sw [label="DC out", penwidth=2];

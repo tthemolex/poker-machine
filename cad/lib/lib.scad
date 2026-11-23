@@ -56,7 +56,7 @@ module gear_rack2d(m, len, back = 3) {
     intersection() {
         union() {
             translate([0, de]) square([len, back]);
-            for (i = [0 : n]) translate([i * p - p / 4, 0]) polygon([
+            for (i = [0 : n]) if (i * p - p / 4 - (p / 4 + de * t) >= 0 && i * p + de * t <= len) translate([i * p - p / 4, 0]) polygon([
                 [-(p / 4 + de * t), de + 0.01], [p / 4 + de * t + 0.01, de + 0.01],
                 [p / 4 - ad * t, -ad], [-(p / 4 - ad * t), -ad] ]);
         }

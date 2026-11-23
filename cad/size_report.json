@@ -1,15 +1,15 @@
 {
-  "footprint_d": 195.0,
-  "max_radius": 97.5,
+  "footprint_d": 199.0,
+  "max_radius": 99.5,
   "height": 207.5,
-  "max_bbox_xy": 195.0,
+  "max_bbox_xy": 199.0,
   "limit_d": 200.0,
   "limit_h": 220.0,
   "stretch_d": 170.0,
   "stretch_h": 180.0,
-  "gap_to_stretch_d": 25.0,
+  "gap_to_stretch_d": 29.0,
   "gap_to_stretch_h": 27.5,
-  "margin_d": 5.0,
+  "margin_d": 1.0,
   "margin_h": 12.5,
   "pass_hard": true,
   "angles": [
@@ -29,35 +29,35 @@
   "drivers_radius": [
     [
       "base_shell",
-      97.5
+      99.5
     ],
     [
       "ui_bezel",
-      97.5
+      99.5
     ],
     [
       "turntable",
-      97.5
+      99.5
     ],
     [
-      "burn_tray",
-      97.5
+      "slot_panel",
+      99.5
     ],
     [
       "turret_shell",
-      97.5
+      99.5
     ],
     [
       "top_cap",
-      97.5
+      99.5
     ],
     [
       "v_rocker_switch",
-      97.29
+      99.28
     ],
     [
       "v_button_go",
-      97.15
+      99.15
     ]
   ],
   "drivers_height": [

@@ -9,7 +9,7 @@ module battery_door() {
             rbox_at(-CR_XI + 0.2, CR_XI - 0.2, -CR_YI + 0.2, CR_YI - 0.2, 0, FLOOR_T, 0.8);
         }
         for (p = DOOR_SCREWS) translate([p[0], p[1], 0]) m3_csk(5);
-        translate([0, -CR_YI + 8, -1]) rbox([30, 6, 1.6], 3);            // finger pull
+        translate([0, -CR_YI - DOOR_REBATE + 1.5, -1]) rbox([30, 3, 5], 1.4);  // finger notch through the flange edge
     }
 }
 module battery_door_print() battery_door();

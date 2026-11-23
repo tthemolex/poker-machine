@@ -28,8 +28,14 @@ constexpr float TURRET_STEPS_PER_DEG = 88.88888888888889f;
 constexpr int32_t BOARD_DEG = 8;  // turret angle of the board centre; 8 = 2*spread so the fan [0,16] never wraps past 0/360 (hall home = 0)
 constexpr int32_t BOARD_SPREAD_DEG = 4;  // fan of the 5 board cards (index-2..+2)
 constexpr int32_t TURRET_MAX_DEG = 360;  // never rotate beyond 0..360 (cable loop)
+constexpr int32_t BURN_DEG = 22;  // burn spot: very low launch onto the table, beside the board fan [0,16], before seat 0 (>= 26 deg), D-20
 constexpr int32_t ENV_MAX_D = 200;  // hard limit footprint diameter
 constexpr int32_t ENV_MAX_H = 220;  // hard limit height
 constexpr int32_t ENV_STRETCH_D = 170;
 constexpr int32_t ENV_STRETCH_H = 180;
+constexpr float PUSH_PINION_R = 7.5f;  // mm, m1 x 15T / 2 (pusher pinion pitch radius)
+constexpr int32_t PUSH_HOME_DEG = 10;  // servo angle with the blade retracted
+constexpr int32_t PUSH_SWEEP_DEG = 150;  // servo travel home -> out
+constexpr int32_t PUSH_OUT_DEG = 160;  // servo angle at full stroke
+constexpr float PUSH_STROKE_MM = 19.634954084936187f;  // blade travel
 }  // namespace geom

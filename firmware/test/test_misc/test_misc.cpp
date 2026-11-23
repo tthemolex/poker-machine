@@ -85,6 +85,8 @@ void test_led_patterns() {
   TEST_ASSERT_FALSE(ledLevel(LedPattern::Ready, 1000));
   TEST_ASSERT_TRUE(ledLevel(LedPattern::ReadyLowBat, 210));
   TEST_ASSERT_FALSE(ledLevel(LedPattern::Ready, 210));
+  TEST_ASSERT_TRUE(ledLevel(LedPattern::Service, 100));
+  TEST_ASSERT_FALSE(ledLevel(LedPattern::Service, 1900));
   // Count n: exactly n rising edges
   for (uint8_t n = 1; n <= 10; n++) {
     int edges = 0;

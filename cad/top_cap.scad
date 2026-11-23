@@ -34,7 +34,7 @@ module top_cap() difference() {
             translate([0, 0, SHELL_Z1 - 6]) ring_sector(TURRET_RI - 0.2, TURRET_RI - 2.2, 6 + EPS, a - 6, a + 6, $fn = 240);
             translate([0, 0, SHELL_Z1]) ring_sector(TURRET_RI + 0.5, TURRET_RI - 2.2, 3, a - 6, a + 6, $fn = 240);
         }
-        translate([0, LID_YC, CAP_IN_Z - 1.5]) linear_extrude(1.5 + EPS) difference() { rrect(LID_OPEN + [2, 2], 5); rrect(LID_OPEN - [3, 3], 3.5); }
+        translate([0, LID_YC, CAP_IN_Z - 1.5]) linear_extrude(1.5 + EPS) difference() { rrect(LID_OPEN + [6, 6], 5); rrect(LID_OPEN - [3, 3], 3.5); }
     }
     translate([0, LID_YC, CAP_IN_Z - 0.01]) linear_extrude(10) rrect(LID_OPEN, 5);
 }

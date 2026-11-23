@@ -81,6 +81,9 @@ def export_placed(names, rack_pos, turret_deg=0, outdir=None, extra=()):
     """Export each placed assembly part to STL. Returns {name: path or None (empty)}."""
     outdir = pathlib.Path(outdir or BUILD / f"placed_r{rack_pos:g}_t{turret_deg:g}")
     outdir.mkdir(parents=True, exist_ok=True)
+    if extra == () and set(names) == {n for n, _ in assembly_parts()}:
+        for old in outdir.glob("*.stl"):   # drop exports of parts no longer in the registry
+            old.unlink()
 
     def one(name):
         path = outdir / f"{name}.stl"

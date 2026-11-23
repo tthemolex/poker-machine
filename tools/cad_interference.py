@@ -21,11 +21,12 @@ from cad_common import BUILD, assembly_parts, export_placed, load_mesh, params, 
 TOL_MM3 = 1.0
 
 # Intended material overlaps (press fits / heat-set inserts / meshing teeth). Each needs a reason.
-ALLOWED = {
-    frozenset({"v_deck_inserts", "base_shell"}): "heat-set inserts (OD 4.6) melted into 4.0 mm holes",
-    frozenset({"v_nut_inserts", "rack_nut_arm"}): "heat-set inserts (OD 4.6) melted into 4.0 mm holes",
-    frozenset({"v_idler_shafts", "idler_arm"}): "3 mm idler axle pressed into a 2.95 mm hole",
-    frozenset({"v_mg90s", "pusher_pinion"}): "pinion pressed onto the 4.8 mm servo spline (4.7 mm bore)",
+ALLOWED = {   # pair -> (reason, max mm3 = ~1.1 x the expected overlap)
+    frozenset({"v_deck_inserts", "base_shell"}): ("heat-set inserts (OD 4.6) melted into 4.0 mm holes", 4 * 23.1 * 1.1),
+    frozenset({"v_idler_shafts", "idler_arm"}): ("3 mm idler axle pressed into a 2.95 mm hole", 1.3),
+    frozenset({"v_mg90s", "pusher_pinion"}): ("pinion pressed onto the 4.8 mm servo spline (4.7 mm bore)", 2.5),
+    frozenset({"v_nut_screws", "rack_nut_arm"}): ("M3 thread-forming screws (2.9) in 2.5 mm pilot holes, 6 mm deep", 4 * 1.70 * 6 * 1.1),
+    frozenset({"card_load", "v_pinch_rollers"}): ("pinch rollers squeeze the card being fed by 0.15 mm (intended)", 3.0),
 }
 
 
@@ -78,8 +79,8 @@ def main():
                 continue
             if vol < TOL_MM3:
                 verdict = "PASS (contact)"
-            elif key in ALLOWED:
-                verdict = "ALLOWED: " + ALLOWED[key]
+            elif key in ALLOWED and vol <= ALLOWED[key][1]:
+                verdict = f"ALLOWED (cap {ALLOWED[key][1]:.1f}): " + ALLOWED[key][0]
             else:
                 verdict = "FAIL"
                 fails += 1

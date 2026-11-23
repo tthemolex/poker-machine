@@ -66,23 +66,27 @@ constexpr float TURN_ACCEL = 12000.0f;      // turret acceleration
 constexpr float RACK_MAX_SPEED = 16000.0f;  // rack stepper max speed (80 mm/s at 200 steps/mm)
 constexpr float RACK_ACCEL = 40000.0f;      // rack acceleration
 constexpr float TURN_HOMING_SPEED = 1500.0f;  // turret homing seek speed (~17 deg/s)
+constexpr float TURN_HOMING_SLOW = 400.0f;    // final slow approach to the hall edge (~4.5 deg/s)
 constexpr float RACK_HOMING_SPEED = 3000.0f;  // rack homing seek speed (15 mm/s)
-constexpr float TURN_BACKOFF_DEG = 10.0f;   // back off the hall sensor if already on it
+constexpr float TURN_BACKOFF_DEG = 5.0f;    // travel past the released hall zone before the slow approach
+constexpr float TURN_SEARCH_WINDOW_DEG = 25.0f;  // homing search margin around the believed angle
+constexpr float TURN_ZONE_MAX_DEG = 15.0f;  // hall active longer than this = stuck sensor
 constexpr float RACK_BACKOFF_MM = 3.0f;     // back off the microswitch if already pressed
 constexpr bool TURN_DIR_INVERT = false;     // flip if the turret turns counter-clockwise
 constexpr bool RACK_DIR_INVERT = false;     // flip if the rack moves down on +steps
 
 // ---------------- Homing timeouts (ms) ----------------
-constexpr uint32_t TURN_HOME_TIMEOUT_MS = 25000;   // full 360 deg at homing speed is ~21.6 s
-constexpr uint32_t TURN_REHOME_TIMEOUT_MS = 5000;  // re-home from the 0 deg park position
+constexpr uint32_t TURN_HOME_TIMEOUT_MS = 40000;   // watchdog; the search itself is bounded by angle
 constexpr uint32_t RACK_HOME_TIMEOUT_MS = 8000;    // full 81 mm travel at 15 mm/s is ~5.4 s
 constexpr uint32_t BACKOFF_TIMEOUT_MS = 3000;
 
 // ---------------- Launcher PWM (0..255 on DRV8833 B) ----------------
 constexpr uint8_t LAUNCH_SEAT = 255;   // full throw to a player
 constexpr uint8_t LAUNCH_BOARD = 110;  // short throw to the board next to the machine
-constexpr uint8_t LAUNCH_BURN = 55;    // dribble into the turret burn tray
+constexpr uint8_t LAUNCH_BURN = 55;    // very low throw onto the burn spot (geom::BURN_DEG)
+constexpr uint8_t LAUNCH_PURGE = LAUNCH_BOARD;  // purge / double-feed clearing to the burn spot
 constexpr uint32_t SPINUP_MS = 250;    // settle time after a launcher speed change
+constexpr uint32_t LAUNCH_RAMP_MS = 120;  // soft PWM ramp on spin-up (limits the DRV8833 inrush)
 constexpr uint32_t MOTOR_PWM_HZ = 20000;  // DRV8833 PWM frequency (inaudible)
 
 // ---------------- Loader ----------------
@@ -91,10 +95,20 @@ constexpr uint32_t NO_CARD_MS = 1500;  // beam never blocked within this -> hopp
 constexpr uint32_t JAM_MS = 1000;      // beam blocked longer than this -> jam
 constexpr uint32_t DOUBLE_MS = 350;    // beam blocked longer than this -> two cards (~1.5x single)
 constexpr uint32_t SEAT_MS = 150;      // extra roller run after the card clears the beam
+constexpr bool EXTRA_CARD_PROBE = true;   // after the 52nd card, probe the hopper for a 53rd
+constexpr uint32_t PROBE_REVERSE_MS = 300;  // pull a probed extra card back into the hopper
 
 // ---------------- Pusher servo (MG90S) ----------------
-constexpr int PUSH_HOME = 10;          // servo angle, blade retracted behind the rack
-constexpr int PUSH_OUT = 160;          // servo angle, blade fully through the shelf
+// Angles come from the CAD (geom::PUSH_HOME_DEG / PUSH_OUT_DEG, pinion R 7.5 mm,
+// 150 deg sweep = 19.6 mm stroke); the trims correct servo-horn spline offsets.
+constexpr int PUSH_HOME_TRIM_DEG = 0;
+constexpr int PUSH_OUT_TRIM_DEG = 0;
+// Blade retracted behind the rack's back face: the rack can move freely.
+constexpr int PUSH_HOME = geom::PUSH_HOME_DEG + PUSH_HOME_TRIM_DEG;
+// Full stroke: the blade stops at Y 6.6 (mid-rack, NOT through the shelf) after
+// pushing the card ~5 mm into the launcher nip, which then pulls it out.
+constexpr int PUSH_OUT = geom::PUSH_OUT_DEG + PUSH_OUT_TRIM_DEG;
+static_assert(PUSH_HOME >= 0 && PUSH_OUT <= 180 && PUSH_HOME < PUSH_OUT, "servo range");
 constexpr uint32_t PUSH_RETRACT_MS = 200;  // wait for the blade to clear the rack before moving it
 constexpr uint32_t SERVO_SETTLE_MS = 50;
 
@@ -111,6 +125,15 @@ constexpr float VBAT_MIN = 10.5f;       // refuse to start a hand below this
 constexpr float VBAT_ABSENT = 3.0f;     // below this: no battery (USB only), motors unpowered
 constexpr float VBAT_CAL = 1.0f;        // multiply reading by this to match a multimeter
 constexpr uint8_t VBAT_SAMPLES = 16;
+
+// ---------------- RNG ----------------
+// Enable the SAR-ADC entropy source (bootloader_random_enable) while dealing, so
+// esp_random() is a true RNG with the radios off. It shares the SAR ADC with the
+// battery sense on GPIO34, so it is switched off again before any ADC read.
+constexpr bool HW_ENTROPY_DURING_DEAL = true;
+
+// ---------------- Serial console ----------------
+constexpr uint32_t CONSOLE_IDLE_MS = 60000;  // power down after this long without a command
 
 // ---------------- Buttons / UI ----------------
 constexpr uint32_t DEBOUNCE_MS = 30;

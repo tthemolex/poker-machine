@@ -10,6 +10,7 @@ use <base_shell.scad>
 use <battery_door.scad>
 use <base_deck.scad>
 use <hall_post.scad>
+use <spool_hub.scad>
 use <ui_bezel.scad>
 use <turntable.scad>
 use <rack_comb.scad>
@@ -25,6 +26,8 @@ use <hopper_weight.scad>
 use <hopper_lid.scad>
 use <loader_frame.scad>
 use <loader_coupler.scad>
+use <loader_pulley_feed.scad>
+use <loader_pulley_pinch.scad>
 use <pusher_guide.scad>
 use <pusher_slider.scad>
 use <pusher_pinion.scad>
@@ -32,8 +35,9 @@ use <servo_mount.scad>
 use <launcher_frame.scad>
 use <launcher_floor.scad>
 use <idler_arm.scad>
-use <burn_tray.scad>
+use <slot_panel.scad>
 use <turret_shell.scad>
+use <shell_anchor.scad>
 use <top_cap.scad>
 use <vendor/nema17_pancake.scad>
 use <vendor/nema17_t8.scad>
@@ -68,6 +72,9 @@ use <vendor/pusher_blade.scad>
 use <vendor/spring_5x10.scad>
 use <vendor/m3_screw.scad>
 use <vendor/m3_insert.scad>
+use <vendor/pinch_roller.scad>
+use <vendor/o_ring_belt.scad>
+use <vendor/ribbon_cable.scad>
 
 turret_deg = 0;      // 0..360
 rack_pos   = 30;     // 0..RACK_TRAVEL (rack bottom above RACK_Z_MIN)
@@ -86,6 +93,7 @@ PARTS = [
  ["battery_door",      "base",   [0.30,0.31,0.34], [0,0,-1.5]],
  ["base_deck",         "base",   [0.58,0.62,0.68], [0,0,-0.25]],
  ["hall_post",         "base",   [0.95,0.45,0.20], [0,0,-0.15]],
+ ["spool_hub",         "base",   [0.70,0.30,0.30], [0,0,-0.15]],
  ["ui_bezel",          "base",   [0.07,0.07,0.08], [0,-0.6,-0.9]],
  ["turntable",         "turret", [0.30,0.52,0.78], [0,0,0]],
  ["rack_comb_px",      "rack",   [0.95,0.55,0.15], [0.25,0,0.75]],
@@ -101,6 +109,8 @@ PARTS = [
  ["hopper_gate",       "turret", [0.35,0.55,0.92], [0,-0.4,0.9]],
  ["hopper_weight",     "turret", [0.42,0.42,0.47], [0,-0.8,1.1]],
  ["loader_coupler",    "turret", [0.92,0.90,0.30], [0.5,-0.8,0.2]],
+ ["loader_pulley_feed",  "turret", [0.92,0.55,0.20], [-0.6,-0.8,0.25]],
+ ["loader_pulley_pinch", "turret", [0.92,0.55,0.20], [-0.6,-0.6,0.5]],
  ["pusher_guide",      "turret", [0.95,0.68,0.75], [0,-0.8,0.35]],
  ["pusher_slider",     "turret", [0.88,0.36,0.52], [0,-0.8,0.25]],
  ["pusher_pinion",     "turret", [0.65,0.15,0.30], [0,-0.8,0.12]],
@@ -108,8 +118,9 @@ PARTS = [
  ["launcher_frame",    "turret", [0.30,0.74,0.86], [0,0.8,0.45]],
  ["launcher_floor",    "turret", [0.16,0.50,0.62], [0,0.8,0.2]],
  ["idler_arm",         "turret", [0.96,0.84,0.36], [0,0.8,0.05]],
- ["burn_tray",         "turret", [0.86,0.86,0.83], [0,1.4,0]],
+ ["slot_panel",        "turret", [0.88,0.88,0.85], [0,1.4,0]],
  ["turret_shell",      "turret", [0.93,0.93,0.90], [0,0,1.25]],
+ ["shell_anchors",     "turret", [0.55,0.35,0.75], [0,0,0.05]],
  ["top_cap",           "turret", [0.97,0.97,0.95], [0,0,1.6]],
  ["hopper_lid",        "turret", [0.80,0.80,0.78], [0,-0.3,1.8]],
  // ---- vendor ----
@@ -129,6 +140,7 @@ PARTS = [
  ["v_led_5mm",         "base",   undef, [0,-0.9,-0.9]],
  ["v_ssd1306",         "base",   undef, [0,-0.75,-0.9]],
  ["v_a3144",           "base",   undef, [0,0,-0.2]],
+ ["v_ribbon_cable",    "base",   undef, [0,0,-0.18]],
  ["v_deck_screws",     "base",   undef, [0,0,-0.25]],
  ["v_deck_inserts",    "base",   undef, [0,0,-0.9]],
  ["v_magnet_6x3",      "turret", undef, [0,0,-0.05]],
@@ -140,6 +152,10 @@ PARTS = [
  ["v_feed_shaft",      "turret", undef, [0,-0.8,0.25]],
  ["v_n20_motor",       "turret", undef, [0.5,-0.8,0.25]],
  ["v_ir_load_tx",      "turret", undef, [0,-0.4,0.9]],
+ ["v_pinch_rollers",   "turret", undef, [0,-0.4,0.85]],
+ ["v_pinch_shaft",     "turret", undef, [0,-0.4,0.85]],
+ ["v_gate_springs",    "turret", undef, [0,-0.4,0.95]],
+ ["v_o_ring_belt",     "turret", undef, [-0.6,-0.7,0.4]],
  ["v_ir_load_rx",      "turret", undef, [0,-0.8,0.35]],
  ["v_pusher_blade",    "turret", undef, [0,-0.8,0.3]],
  ["v_mg90s",           "turret", undef, [0.3,-0.8,0.0]],
@@ -153,7 +169,6 @@ PARTS = [
  ["v_t8_nut",          "rack",   undef, [-0.6,0,0.75]],
  ["v_lm8uu",           "rack",   undef, [0.6,0,0.75]],
  ["v_nut_screws",      "rack",   undef, [-0.6,0,0.85]],
- ["v_nut_inserts",     "rack",   undef, [-0.6,0,0.75]],
  // ---- cards ----
  ["cards_rack",        "rack",   [0.99,0.97,0.90], [0,0,0.75]],
  ["card_eject",        "rack",   [0.95,0.30,0.25], [0,0,0.75]],
@@ -177,6 +192,7 @@ module ip_draw(name) {
     else if (name == "base_deck") base_deck();
     else if (name == "ui_bezel") ui_bezel();
     else if (name == "hall_post") hall_post();
+    else if (name == "spool_hub") spool_hub();
     else if (name == "turntable") turntable();
     else if (name == "rack_comb_px") rack_comb();
     else if (name == "rack_comb_nx") translate([0, RACK_YC, 0]) rotate(180) translate([0, -RACK_YC, 0]) rack_comb();
@@ -192,6 +208,8 @@ module ip_draw(name) {
     else if (name == "hopper_weight") hopper_weight(Z_LOAD + (HOP_N + 1) * CARD_T);
     else if (name == "hopper_lid") hopper_lid();
     else if (name == "loader_coupler") loader_coupler();
+    else if (name == "loader_pulley_feed") loader_pulley_feed();
+    else if (name == "loader_pulley_pinch") loader_pulley_pinch();
     else if (name == "pusher_guide") pusher_guide();
     else if (name == "pusher_slider") pusher_slider();
     else if (name == "pusher_pinion") pusher_pinion();
@@ -199,8 +217,9 @@ module ip_draw(name) {
     else if (name == "launcher_frame") launcher_frame();
     else if (name == "launcher_floor") launcher_floor();
     else if (name == "idler_arm") idler_arm();
-    else if (name == "burn_tray") burn_tray();
+    else if (name == "slot_panel") slot_panel();
     else if (name == "turret_shell") turret_shell();
+    else if (name == "shell_anchors") for (a = SHELL_TAB_A) shell_anchor(a);
     else if (name == "top_cap") top_cap();
     // vendor
     else if (name == "v_battery") translate([0, 0, FLOOR_T]) vendor_battery_talentcell();
@@ -218,17 +237,22 @@ module ip_draw(name) {
     else if (name == "v_button_set") rotate(ui_az(BTN_X)) translate([TURRET_R - UI_INSET, 0, BTN_Z]) rotate([0, 90, 0]) vendor_button_12mm();
     else if (name == "v_led_5mm") rotate(ui_az(LED_X)) translate([TURRET_R - UI_INSET, 0, LED_Z]) rotate([0, 90, 0]) vendor_led_5mm();
     else if (name == "v_ssd1306") translate([0, -sqrt((BASE_RI - 0.4) ^ 2 - 13.6 ^ 2) + 0.05, OLED_Z]) rotate([90, 0, 0]) vendor_ssd1306();
+    else if (name == "v_ribbon_cable") vendor_ribbon_cable();
     else if (name == "v_a3144") translate([HALL_R, 0, TURNTABLE_Z - 3.0]) vendor_a3144();
     else if (name == "v_deck_screws") for (a = DECK_SCREW_A) rotate(a) translate([DECK_SCREW_R, 0, DECK_Z + DECK_T]) vendor_m3_screw(8);
     else if (name == "v_deck_inserts") for (a = DECK_SCREW_A) rotate(a) translate([DECK_SCREW_R, 0, DECK_Z]) vendor_m3_insert();
     else if (name == "v_magnet_6x3") translate([HALL_R, 0, TURNTABLE_Z + 2.1 - 3]) vendor_magnet_6x3();
-    else if (name == "v_gt2_belt") translate([0, 0, PUL_TOP_Z - PUL_TEETH_H / 2 - BELT_W / 2]) vendor_gt2_belt();
+    else if (name == "v_gt2_belt") translate([0, 0, RING_Z0 + 1.2]) vendor_gt2_belt();
     else if (name == "v_nema17_t8") translate([LM_X, LM_Y, LM_Z0]) vendor_nema17_t8();
     else if (name == "v_rods") for (y = ROD_Y) translate([ROD_X, y, ROD_Z0]) vendor_rod_8mm();
     else if (name == "v_microswitch") translate([ROD_X, MSW_Y, RAIL_BOT_Z1 + 0.1 - 6.5]) vendor_microswitch();
     else if (name == "v_feed_rollers") for (s = [-1, 1]) translate([s * FEED_X, FEED_Y, FEED_Z]) rotate([0, 90, 0]) vendor_feed_roller();
     else if (name == "v_feed_shaft") translate([SHAFT_X0, FEED_Y, FEED_Z]) rotate([0, 90, 0]) vendor_shaft_3mm(SHAFT_X1 - SHAFT_X0);
     else if (name == "v_n20_motor") multmatrix([[0, 0, -1, N20_FACE_X], [-1, 0, 0, FEED_Y], [0, 1, 0, FEED_Z], [0, 0, 0, 1]]) vendor_n20_motor();
+    else if (name == "v_pinch_rollers") for (s = [-1, 1]) translate([s * PINCH_X, PINCH_Y, PINCH_Z]) rotate([0, 90, 0]) vendor_pinch_roller();
+    else if (name == "v_pinch_shaft") translate([SHAFT_X0, PINCH_Y, PINCH_Z]) rotate([0, 90, 0]) vendor_shaft_3mm(PINCH_X1 - SHAFT_X0);
+    else if (name == "v_gate_springs") for (x = [-10, 10]) translate([x, PINCH_Y - 1.2, PINCH_Z + SHAFT_D / 2]) vendor_spring_5x10(7);
+    else if (name == "v_o_ring_belt") translate([BELT_X, 0, 0]) vendor_o_ring_belt();
     else if (name == "v_ir_load_tx") translate([LOADIR_X, LOADIR_Y, Z_LOAD + THROAT]) vendor_ir_beam(false);
     else if (name == "v_ir_load_rx") translate([LOADIR_X, LOADIR_Y, Z_LOAD - HOP_FLOOR_T - 0.1]) mirror([0, 0, 1]) vendor_ir_beam(true);
     else if (name == "v_pusher_blade") translate([0, BLADE_TIP_Y, BLADE_Z0]) vendor_pusher_blade();
@@ -242,11 +266,10 @@ module ip_draw(name) {
     }
     else if (name == "v_spring_idler") translate([0, IDL_SPRING_Y, Z_EJECT + IDL_L[1] + 1.25]) vendor_spring_5x10(-3 - IDL_L[1] - 1.25);
     else if (name == "v_ir_exit_tx") translate([EXITIR_X, EXITIR_Y, Z_EJECT + 2]) vendor_ir_beam(false);
-    else if (name == "v_ir_exit_rx") translate([EXITIR_X, EXITIR_Y, Z_EJECT - 0.3]) mirror([0, 0, 1]) vendor_ir_beam(true);
+    else if (name == "v_ir_exit_rx") translate([EXITIR_X, EXITIR_Y, Z_EJECT - 1.6]) mirror([0, 0, 1]) vendor_ir_beam(true);
     else if (name == "v_t8_nut") translate([LM_X, LM_Y, RACK_Z_MIN + ARM_Z + ARM_T]) vendor_t8_nut();
     else if (name == "v_lm8uu") for (y = ROD_Y, z = LM8_Z) translate([ROD_X, y, RACK_Z_MIN + z]) vendor_lm8uu();
     else if (name == "v_nut_screws") for (a = [45 : 90 : 359]) translate([LM_X + NUT_PCD / 2 * cos(a), LM_Y + NUT_PCD / 2 * sin(a), RACK_Z_MIN + ARM_Z + ARM_T + NUT_FL_T]) vendor_m3_screw(8);
-    else if (name == "v_nut_inserts") for (a = [45 : 90 : 359]) translate([LM_X + NUT_PCD / 2 * cos(a), LM_Y + NUT_PCD / 2 * sin(a), RACK_Z_MIN + ARM_Z + ARM_T]) vendor_m3_insert();
     // cards
     else if (name == "cards_rack") { if (show_cards) for (i = RACK_CARDS) card_at(RACK_YC, RACK_Z_MIN + shelf_z(i)); }
     else if (name == "card_eject") { if (show_cards && EJECT_OK) card_at(RACK_YC, RACK_Z_MIN + shelf_z(_ie)); }

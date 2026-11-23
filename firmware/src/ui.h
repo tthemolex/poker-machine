@@ -24,6 +24,9 @@ bool oledPresent();
 dealer::Press pollGo();
 dealer::Press pollSet();
 bool setHeldRaw();  // raw SET level (boot-time purge check)
+bool goHeldRaw();   // raw GO level (boot-time service mode check)
+// Static service-mode screen.
+void drawService(float vbat, int cards);
 
 // LED: base pattern plus an optional one-shot count overlay.
 void setPattern(dealer::LedPattern p);

@@ -25,8 +25,8 @@ LOADS = [
     ("MG90S pusher servo",                                    5, 0.006, 0.250, 0.700, "~0.4 s per dealt card; detached when idle"),
     ("N20 loader motor (DRV8833 ch A)",                       5, 0.0, 0.120, 0.600, "loading only (~0.5 s per card)"),
     ("130 launcher motor (DRV8833 ch B)",                     5, 0.0, 0.500, 1.500, "dealing only; 1.5 A = start-up surge"),
-    ("IR emitters x2 + A3144 hall",                           5, 0.044, 0.044, 0.044, "always"),
-    ("3V3 loads: OLED, IR receivers x2, TMC VIO x2",          5, 0.019, 0.025, 0.030, "always (via ESP32 LDO)"),
+    ("IR break-beams x2 (emitter + receiver) + A3144 hall",                           5, 0.044, 0.044, 0.044, "always"),
+    ("3V3 loads: OLED, TMC VIO x2",          5, 0.019, 0.025, 0.030, "always (via ESP32 LDO)"),
 ]
 
 def at12(i5, eff=BUCK_EFF, v=V12):

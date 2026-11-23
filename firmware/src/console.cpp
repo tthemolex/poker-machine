@@ -12,10 +12,20 @@ namespace {
 
 char line[64];
 size_t len = 0;
+uint32_t lastCmdMs = 0;
+bool motorsTouched = false;  // a console command powered or ran something
+bool serviceMode = false;
+
+bool refuseInService() {
+  if (!serviceMode) return false;
+  Serial.println("service mode: no motion (reset to exit)");
+  return true;
+}
 
 void help() {
   Serial.println(
       "Commands (between hands; motion commands power up + home first, 'off' to release):\n"
+      "  (motors power down automatically after 60 s without a command)\n"
       "  help | status | vbat | sensors\n"
       "  on | off | home            power up + home / park + power down / re-home both axes\n"
       "  rack eject <shelf>         shelf 0..51 to the eject station\n"
@@ -29,7 +39,7 @@ void help() {
       "  deal seat <n> | deal board <slot> | deal burn   deal one random card\n"
       "  loadone                    feed one card into the next empty shelf, print blocked ms\n"
       "  load                       fill empty shelves from the hopper\n"
-      "  purge                      every full shelf into the burn tray\n"
+      "  purge                      every full shelf onto the burn spot\n"
       "  clear                      forget the rack map (after emptying the rack by hand)");
 }
 
@@ -40,7 +50,16 @@ bool report(Fault f) {
 }
 
 bool ensurePowered(Machine& m) {
+  if (refuseInService()) return false;
+  motorsTouched = true;
   if (m.powered()) return true;
+  const float v = m.readVbat();
+  const dealer::BatteryLevel b = dealer::classifyBattery(v);
+  if (!dealer::batteryAllowsStart(b)) {
+    Serial.printf("battery %.2f V (%s): motors not powered\n", static_cast<double>(v),
+                  dealer::batteryText(b));
+    return false;
+  }
   return report(m.powerUp());
 }
 
@@ -105,9 +124,12 @@ bool run(Machine& m, const dealer::Game& g, char* cmdline) {
   } else if (!strcmp(cmd, "on")) {
     if (ensurePowered(m)) Serial.println("powered, homed");
   } else if (!strcmp(cmd, "off")) {
+    if (refuseInService()) return false;
     m.powerDown();
+    motorsTouched = false;
     Serial.println("parked, motors off");
   } else if (!strcmp(cmd, "home")) {
+    if (refuseInService()) return false;
     m.safeStop();  // forget both zeros, then home both
     if (report(m.powerUp())) Serial.println("homed");
   } else if (!strcmp(cmd, "rack")) {
@@ -143,6 +165,8 @@ bool run(Machine& m, const dealer::Game& g, char* cmdline) {
     const bool launch = cmd[0] == 'l';
     const uint8_t pwm = pwmArg(a1);
     const long ms = a2 ? strtol(a2, nullptr, 10) : (launch ? 2000 : 1000);
+    if (refuseInService()) return false;
+    motorsTouched = true;
     if (launch) m.calLaunch(pwm); else m.calFeed(pwm);
     Serial.printf("%s PWM %u\n", cmd, static_cast<unsigned>(pwm));
     if (ms > 0) {
@@ -151,7 +175,7 @@ bool run(Machine& m, const dealer::Game& g, char* cmdline) {
       Serial.printf("%s off\n", cmd);
     }
   } else if (!strcmp(cmd, "servo")) {
-    if (a1) {
+    if (a1 && ensurePowered(m)) {
       m.calServo(atoi(a1));
       Serial.printf("servo %d\n", atoi(a1));
     }
@@ -203,8 +227,15 @@ bool run(Machine& m, const dealer::Game& g, char* cmdline) {
 
 namespace console {
 
+void setServiceMode(bool on) { serviceMode = on; }
+
 bool poll(Machine& m, const dealer::Game& g) {
   bool changed = false;
+  if (motorsTouched && millis() - lastCmdMs > cfg::CONSOLE_IDLE_MS) {
+    m.powerDown();  // also stops the loader / launcher and detaches the servo
+    motorsTouched = false;
+    Serial.println("console idle: parked, motors off");
+  }
   while (Serial.available() > 0) {
     const int c = Serial.read();
     if (c == '\r' || c == '\n') {
@@ -212,6 +243,7 @@ bool poll(Machine& m, const dealer::Game& g) {
       line[len] = '\0';
       len = 0;
       Serial.printf("> %s\n", line);
+      lastCmdMs = millis();
       changed |= run(m, g, line);
     } else if (len + 1 < sizeof line) {
       line[len++] = static_cast<char>(c);

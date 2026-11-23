@@ -206,7 +206,7 @@ void test_all_angles_in_range_no_wrap() {
           float raw;
           if (a.launch == Launch::Seat) raw = geom::BOARD_DEG + (a.seat + 0.5f) * 360.0f / n;
           else if (a.launch == Launch::Board) raw = geom::BOARD_DEG + (a.boardSlot - 2.0f) * geom::BOARD_SPREAD_DEG;
-          else raw = geom::BOARD_DEG;
+          else raw = geom::BURN_DEG;
           TEST_ASSERT_TRUE(raw >= 0.0f && raw < 360.0f);   // no wrap needed
           TEST_ASSERT_FLOAT_WITHIN(1e-4f, raw, a.deg);
         }

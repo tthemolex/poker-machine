@@ -44,6 +44,7 @@ GT2_PITCH = 2;
 BOARD_DEG        = 8;   // @shared turret angle of the board centre; 8 = 2*spread so the fan [0,16] never wraps past 0/360 (hall home = 0)
 BOARD_SPREAD_DEG = 4;   // @shared fan of the 5 board cards (index-2..+2)
 TURRET_MAX_DEG   = 360; // @shared never rotate beyond 0..360 (cable loop)
+BURN_DEG         = 22;  // @shared burn spot: very low launch onto the table, beside the board fan [0,16], before seat 0 (>= 26 deg), D-20
 
 // ---------------- Envelope limits ----------------
 ENV_MAX_D   = 200;      // @shared hard limit footprint diameter
@@ -80,10 +81,19 @@ assert(RACK_Z_MIN >= TURNTABLE_Z + TURNTABLE_T + 0.5 - 1e-6, "rack collides with
 // =============================================================================
 EPS = 0.01;
 CLR = 0.5;                       // running clearance moving <-> static parts
+// ---- print fits, all derived from TOL (per-side print tolerance, default 0.2) ----
+function fit_free(d)  = d + 2 * TOL;        // free running / clearance bore
+function fit_slide(d) = d + TOL;            // snug sliding fit (rods in blind holes, card guides)
+function fit_press(d) = d - TOL / 4;        // light press (shaft into a printed hole, pinion on spline)
+function fit_snug(d)  = d + TOL / 2;        // snug, glued (steel rods in blind holes)
+M2_PILOT_D = 1.8;                           // M2 self-tapping pilot
+M3_HEAD_CB = M3_HEAD_D + 2 * TOL;           // counterbore for M3 socket heads
+PEG_D = 2.5;                                // locating pegs (hall post, spool hub)
+GAP = TOL;                                  // sliding gap per side between printed parts
 PI_ = 3.14159265358979;
 
 // ---------------- Envelope / shells ----------------
-TURRET_R   = 97.5;               // outer radius: turret shell, turntable, base
+TURRET_R   = 99.5;               // outer radius: turret shell, turntable, base (D-17/D-18)
 SHELL_T    = 1.8;                // turret shell wall
 TURRET_RI  = TURRET_R - SHELL_T; // usable inner radius in the turret
 BASE_WALL  = 2.0;
@@ -134,7 +144,7 @@ LEADSCREW_L = 100;               // D-10: 100 mm (150 mm does not fit the height
 LEAD_D = 8;
 LM_X = -(COMB_OUT + CLR + 0.4 + NEMA_W / 2);
 LM_Y = 0;
-LM_Z0 = TT_TOP + 1;              // motor body bottom (sits on its mount)
+LM_Z0 = TT_TOP + 1.2;            // motor body bottom (sits on a 1.2 mm seat)
 LM_FACE = LM_Z0 + NEMA_T8_L;
 LM_PLATE_T = 4;                  // mount plate on the motor face
 NUT_FL_D = 22; NUT_FL_T = 3.5; NUT_BODY_D = 10.2; NUT_L = 15; NUT_PCD = 16;
@@ -144,22 +154,31 @@ assert(RACK_Z_MIN + RACK_TRAVEL + ARM_Z + ARM_T + NUT_FL_T <= LM_FACE + LEADSCRE
 assert(RACK_Z_MIN + ARM_Z >= LM_FACE + LM_PLATE_T + CLR, "arm hits motor plate");
 
 // ---------------- Hopper / loader (-Y side, load station) ----------------
-HOP_XI = 45;  HOP_WALL = 1.6;  HOP_XO = HOP_XI + HOP_WALL;
+HOP_XI = 45;  HOP_WALL = 1.2;  HOP_XO = HOP_XI + HOP_WALL;
 HOP_Y_FRONT = RACK_Y0 - 0.8;     // gate front face (static, behind the rack)
-GATE_T = 6.4;
+GATE_T = 9.4;                    // gate houses the pinch roller (D-18)
 HOP_YI0 = HOP_Y_FRONT - GATE_T;  // card zone front
-HOP_YI1 = HOP_YI0 - (CARD_W + 1.0);
+HOP_YI1 = HOP_YI0 - (CARD_W + 0.8);
 HOP_YO1 = HOP_YI1 - HOP_WALL;
 HOP_CR  = 4.4;                   // inner corner radius (card corner r3.2 fits up to 4.5)
 HOP_FLOOR_T = 1.6;
 HOP_Z1  = CAP_IN_Z - 4.0;       // clears the cap's inner rim chamfer at the hopper corners
 THROAT  = 0.45;                  // single-card gap under the gate
-FEED_D = 14; FEED_W = 8; FEED_X = 32; FEED_Y = -26;
+FEED_D = 14; FEED_W = 8; FEED_X = 34; FEED_Y = -28;
 FEED_Z = Z_LOAD - FEED_D / 2;    // roller tops flush with the hopper floor
 SHAFT_D = 3;
-SHAFT_X0 = -(HOP_XO + 0.4);  SHAFT_X1 = 51.5;
+SHAFT_X0 = -54.5;  SHAFT_X1 = 51.5;
 N20_FACE_X = 61.5;               // N20 gearbox output face
-LOADIR_X = 18;  LOADIR_Y = (HOP_Y_FRONT + HOP_YI0) / 2;  // load break-beam
+// pinch pair at the throat (D-18): driven Ø6 rubber rollers in the gate press the card on the floor
+PINCH_D = 7;  PINCH_W = 6;  PINCH_X = 26;  PINCH_Y = RACK_Y0 - CLR - PINCH_D / 2;   // roller face 0.5 behind the rack back face
+assert(HOP_Y_FRONT - (PINCH_Y + fit_free(SHAFT_D) / 2) >= MIN_WALL, "pinch shaft too close to the gate face");
+PINCH_SQ = 0.15;                 // rubber squeeze on the card
+PINCH_Z = Z_LOAD + CARD_T - PINCH_SQ + PINCH_D / 2;
+PINCH_X1 = PINCH_X + PINCH_W / 2 + 1;     // pinch shaft runs from SHAFT_X0 to here
+BELT_X = -52;                    // O-ring belt plane (-X, outboard of the -X comb)
+PUL_FEED_D = 12;  PUL_PINCH_D = 5.8;      // groove diameters: pinch surface speed = 1.03 x feed
+GATE_YC = (HOP_Y_FRONT + HOP_YI0) / 2;
+LOADIR_X = 38;  LOADIR_Y = -17;  // load break-beam (outside the pinch rollers / shaft)
 WEIGHT_T = 10;
 
 // ---------------- Pusher (eject station) ----------------
@@ -167,15 +186,22 @@ BLADE_W = 24;  BLADE_T = 0.5;
 BLADE_Z0 = Z_EJECT - 0.30;       // D-13: straddles the card edge incl. sag
 BLADE_TIP_Y = RACK_Y0 - 1.0;     // retracted tip
 PIN_M = 1;  PIN_T = 15;  PIN_R = PIN_M * PIN_T / 2;  PIN_W = 6;
-SERVO_SWEEP = 150;               // deg, PUSH_HOME 10 -> PUSH_OUT 160 in firmware
+PUSH_PINION_R = 7.5;             // @shared mm, m1 x 15T / 2 (pusher pinion pitch radius)
+PUSH_HOME_DEG = 10;              // @shared servo angle with the blade retracted
+PUSH_SWEEP_DEG = 150;            // @shared servo travel home -> out
+PUSH_OUT_DEG = PUSH_HOME_DEG + PUSH_SWEEP_DEG;                       // @shared servo angle at full stroke
+PUSH_STROKE_MM = PUSH_PINION_R * PUSH_SWEEP_DEG * 3.14159265358979 / 180; // @shared blade travel
+assert(abs(PUSH_PINION_R - PIN_R) < 1e-9, "PUSH_PINION_R must equal the pinion pitch radius");
+SERVO_SWEEP = PUSH_SWEEP_DEG;
 PUSH_STROKE = PIN_R * SERVO_SWEEP * PI_ / 180;
-CARRIER_L = 33;  CARRIER_Y0 = -48.5;   // carrier front (retracted)
+CARRIER_L = 33;  CARRIER_Y0 = -50.5;   // carrier front (retracted)
 CARRIER_TOP = BLADE_Z0;
 CARRIER_Z0 = Z_EJECT - 7.3;
 RACKG_PITCH_Z = CARRIER_Z0 - 1.25 * PIN_M;  // gear-rack pitch line
 PIN_Y = -56;  PIN_Z = RACKG_PITCH_Z - PIN_R;
 BLADE_L = (BLADE_TIP_Y - CARRIER_Y0) + 15;
 assert(CARRIER_Y0 + PUSH_STROKE <= FEED_Y - SHAFT_D / 2 - 1, "carrier hits feed shaft");
+assert(FEED_Y + FEED_D / 2 < PINCH_Y - PINCH_D / 2, "feed roller overlaps pinch roller in Y");
 
 // ---------------- Launcher (+Y side, eject station) ----------------
 NIP_Y = 65;  WHEEL_D = 24;  WHEEL_W = 10;  IDLER_D = 12;  IDLER_W = 12;
@@ -188,7 +214,7 @@ LF_Y0 = FINGER_Y + CLR;  LF_Y1 = 80;   // every other static launcher face clear
 LF_XI = 46.4;  LF_XO = 48.4;
 LF_TOP_Z0 = Z_EJECT + 24.8;  LF_TOP_T = 3;
 M130_X0 = 7;                     // 130 motor face
-EXITIR_X = -22;  EXITIR_Y = 56;
+EXITIR_X = -22;  EXITIR_Y = 56.4;
 FINGER_X = 40;
 SLOT_Z0 = Z_EJECT - 1.5;  SLOT_Z1 = Z_EJECT + 4.5;   // exit slot in the shell
 assert(NIP_Y - WHEEL_D / 2 >= RACK_Y1 + CLR, "launcher wheel overlaps rack sweep");
@@ -212,8 +238,13 @@ PUL_TOP_Z = TURNTABLE_Z - 0.5;
 PUL_TEETH_H = 8;  PUL_FL_T = 1;  PUL_HUB_H = 5;  PUL_HUB_D = 16;
 RING_Z0 = PUL_TOP_Z - PUL_TEETH_H + 0.2;
 TM_FACE_Z = PUL_TOP_Z - PUL_TEETH_H - PUL_FL_T - PUL_HUB_H - 0.2 - NEMA_BOSS_H;
-HALL_R = 26;                     // hall sensor + magnet radius (inside bearing ID), at +X
+HALL_R = 29.5;                     // hall sensor + magnet radius (inside bearing ID), at +X
 CABLE_HOLE = [0, -24];  CABLE_HOLE_D = 16;   // turntable cable pass (in bearing ID)
+// harness (D-19): flat ribbon wound as a clock spring in the bearing ID, outer end up through
+// CABLE_HOLE into the loader-frame box, inner end down a radial deck slot over the battery
+// (0.4 + 2.0 mm deep under the bearing plate) to the -Y electronics crescent.
+SPOOL_RI = 7;     SPOOL_RO = 20;  SPOOL_Z0 = DECK_Z + DECK_T + 1;  SPOOL_H = 7;
+RIBBON_W = 12;  RIBBON_SLOT_X = [-21, -7];  RIBBON_SLOT_Y1 = -52;
 DECK_SCREW_R = 88;  DECK_SCREW_A = [25, 155, 205, 335];
 UI_Z = 24;                       // UI row centre height on the base wall
 // ---------------- Base layout (world, static) ----------------
@@ -230,18 +261,21 @@ FIX_RAIL   = [[69, -4], [69, 44]];
 FIX_LMM    = [[-86, -26], [-86, 26], [-66, -27], [-66, 27]];
 FIX_LOADER = [[-40, -20], [40, -20], [-40, -78], [40, -78]];
 FIX_LAUNCH = [[-51.4, 58], [51.4, 58], [-51.4, 70], [51.4, 70]];
-SHELL_TAB_A = [30, 150, 210, 330];  SHELL_TAB_R = TURRET_RI - 3;
+SHELL_TAB_A = [30, 150, 210, 330];  SHELL_TAB_R = TURRET_RI - 4;
 function polar(r, a) = [r * cos(a), r * sin(a)];
-FIX_SHELL  = [for (a = SHELL_TAB_A) polar(SHELL_TAB_R, a)];
+function rpt(r, t, a) = [r * cos(a) - t * sin(a), r * sin(a) + t * cos(a)];   // radial r, tangential t at azimuth a
+ANCHOR_H = 2 * M3_INSERT_L + 1.2;                    // shell anchors: CSK from below at t=-4, shell screw from above at t=+4
+FIX_SHELL  = [for (a = SHELL_TAB_A) rpt(SHELL_TAB_R, -4, a)];
+SHELL_SCREW = [for (a = SHELL_TAB_A) rpt(SHELL_TAB_R, 4, a)];
 FIX_ALL    = concat(FIX_RAIL, FIX_LMM, FIX_LOADER, FIX_LAUNCH, FIX_SHELL);
 // ---------------- Rack fastening (pilot holes for M3 thread-forming screws) ----------------
-PILOT_D = 2.5;  PILOT_L = 4.0;
-CARR_HOLES = [[12, 22], [28, 22], [12, 58], [28, 58]];               // [y, z rel. rack bottom]
+PILOT_D = 2.5;  PILOT_L = COMB_WALL - MIN_WALL;   // keeps 1.2 mm behind the pilot
+CARR_HOLES = [[16.5, 22], [23.5, 22], [16.5, 58], [23.5, 58]];   // between the bearing housings, symmetric about RACK_YC               // [y, z rel. rack bottom]
 ARM_HOLES  = [[-5, ARM_Z + 10], [5, ARM_Z + 10], [-5, ARM_Z + 17], [5, ARM_Z + 17]];
 // ---------------- Loader frame / pusher guide joints ----------------
-WING_F = [-42, -34];  WING_B = [-81, -78];        // pusher-guide wing Y bands
-WING_FIX = [[-39.25, -38], [39.25, -38], [-39.25, -77], [39.25, -77]];  // CSK M3 into loader-frame ledges
-SERVO_FIX = [[20, -38], [20, -77]];               // servo plate -> wing inserts
+WING_F = [-46, -38];  WING_B = [-81, -78];        // pusher-guide wing Y bands
+WING_FIX = [[-39.25, -42], [39.25, -42], [-39.25, -77], [39.25, -77]];  // CSK M3 into loader-frame ledges
+SERVO_FIX = [[20, -42], [20, -77]];               // servo plate -> wing inserts
 WING_Z0 = Z_EJECT - 5.5;  WING_Z1 = Z_EJECT + 1.95;
 LEDGE_Z0 = WING_Z0 - 6.5;
 HOP_TAB_Y = [-40, -70];
@@ -253,3 +287,5 @@ IDL_SPRING_Y = IDL_L[0];
 LFL_Y1 = NIP_Y - IDLER_D / 2 - 0.5; // launcher floor end (just before the idler)
 UI_INSET = 0.6;                  // flat UI parts sit this far inside the curved skin (flush, corners do not protrude)
 function ui_az(x) = 270 + asin(x / TURRET_R);    // azimuth of a UI element at chord offset x (front, -Y)
+LFL_INS = [57.5, -6];            // launcher-floor end-block insert (Y, z rel. Z_EJECT)
+SP_TAB_X0 = 39;  SP_INS = [75, TT_TOP + 22];   // slot panel tabs: insert (Y, z) from the side plates

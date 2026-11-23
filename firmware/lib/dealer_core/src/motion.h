@@ -15,6 +15,9 @@ int32_t rackMmToSteps(float mm);
 int32_t rackEjectSteps(int shelf);
 int32_t rackLoadSteps(int shelf);
 constexpr float kRackMaxMm = geom::RACK_TRAVEL;
+// Rack position at which NO shelf faces the load station (homed: the load station
+// is STATION_OFFSET above shelf 51). Used to probe the hopper for a 53rd card.
+float rackNoShelfAtLoadMm();
 
 // ---------------- Turret (degrees, clockwise from home = board) ----------------
 // Wrap into [0, 360). The turret never crosses 360 (cable service loop), so every
@@ -25,7 +28,8 @@ float normDeg(float deg);
 float seatDeg(uint8_t seat, uint8_t players);
 // Board card `slot` 0..4 fanned around the board: BOARD + (slot - 2) * spread.
 float boardDeg(uint8_t slot);
-// Burns are thrown at the board angle at low speed and drop into the turret tray.
+// Burns are thrown at very low speed onto the burn spot on the table at
+// geom::BURN_DEG, beside the board fan and before seat 0.
 float burnDeg();
 // Steps from the hall home for a table angle, incl. cfg::TURRET_ZERO_TRIM_DEG,
 // always inside [0, 360) deg worth of steps.

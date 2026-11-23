@@ -6,7 +6,7 @@ PIO    ?= $(shell command -v pio 2>/dev/null || echo $(HOME)/.platformio/penv/bi
 PY     ?= python3
 BUILD  := build
 
-.PHONY: all geometry firmware test cad stl renders interference cardpath size wiring checks clean
+.PHONY: all geometry firmware test cad stl renders printability interference cardpath size wiring checks clean
 
 all: geometry firmware test stl wiring renders checks
 	@echo; echo "make all: OK"
@@ -30,6 +30,9 @@ stl:
 renders:
 	$(PY) tools/cad_render.py
 
+printability:
+	$(PY) tools/cad_printability.py
+
 interference:
 	$(PY) tools/cad_interference.py
 
@@ -46,7 +49,7 @@ wiring:
 	dot -Tpng -Gdpi=150 electronics/power.dot -o electronics/power.png
 	$(PY) electronics/power_budget.py --check
 
-checks: interference cardpath size
+checks: printability interference cardpath size
 	$(PY) tools/check_consistency.py
 	$(PY) tools/check_pins.py
 	$(PY) tools/check_bom.py

@@ -35,7 +35,7 @@ module base_shell() {
             // deck screw bosses (insert at top)
             for (a = DECK_SCREW_A) rotate(a) translate([DECK_SCREW_R, 0, 0]) cylinder(d = 8, h = DECK_Z);
             // battery door screw bosses
-            for (p = DOOR_SCREWS) translate([p[0], p[1], 0]) cylinder(d = 8, h = FLOOR_T + 6);
+            for (p = DOOR_SCREWS) translate([p[0], p[1], 0]) cylinder(d = 8, h = DOOR_REBATE_T + M3_INSERT_L + MIN_WALL);
             // electronics supports: ESP32 end blocks, driver centre blocks, buck pad
             for (s = [-1, 1]) translate(ESP_POS + [s * 22.5, 0, 0]) box_at(-2.5, 2.5, -8, 8, -ESP_POS[2] + 0.5, 0);
             for (p = TMC_POS) translate(p) box_at(-4, 4, -7, 7, -p[2] + 0.5, 0);
@@ -55,9 +55,9 @@ module base_shell() {
         rotate(ROCKER_A) translate([TURRET_R - 6, 0, PWR_Z]) cube([12, 13.2, 8.9], center = true);
         rotate(ROCKER_A) translate([TURRET_R - 1.6 - UI_INSET + 2, 0, PWR_Z]) cube([4, 15.4, 10.9], center = true);
         radial_hole(JACK_A, PWR_Z, 8.2);
-        rotate(JACK_A) translate([TURRET_R - 1.6 - UI_INSET, 0, PWR_Z]) rotate([0, 90, 0]) cylinder(d = 10.4, h = 4);
-        // rubber feet recesses (4 x 10 mm)
-        for (a = [45 : 90 : 359]) rotate(a) translate([88, 0, -1]) cylinder(d = 10.4, h = 1.6);
+        rotate(JACK_A) translate([TURRET_R - 1.6 - UI_INSET, 0, PWR_Z]) rotate([0, 90, 0]) cylinder(d = fit_free(10), h = 4);
+        // ribbon pass over the cradle wall into the -Y crescent
+        box_at(RIBBON_SLOT_X[0], RIBBON_SLOT_X[1], -CR_YO - 1, -CR_YI + 1, DECK_Z - 3, DECK_Z + 1);
     }
 }
 module base_shell_print() base_shell();

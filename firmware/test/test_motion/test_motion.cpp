@@ -59,6 +59,9 @@ void test_seat_angles_even_and_in_range() {
     // The board sits in the middle of the gap between the last and the first seat.
     const float gapMid = normDeg(seatDeg(n - 1, n) + step / 2.0f);
     TEST_ASSERT_FLOAT_WITHIN(1e-3f, normDeg(geom::BOARD_DEG), normDeg(gapMid + 1e-4f) - 1e-4f);
+    // The burn spot sits after the board fan and before seat 0, for every table size.
+    TEST_ASSERT_TRUE(burnDeg() > boardDeg(4));
+    TEST_ASSERT_TRUE(burnDeg() < seatDeg(0, n));
     // The fanned board stays inside that gap even with 10 seats.
     for (uint8_t b = 0; b < 5; b++) {
       float off = normDeg(boardDeg(b) - geom::BOARD_DEG);
@@ -83,7 +86,10 @@ void test_board_and_burn_angles() {
     TEST_ASSERT_FLOAT_WITHIN(1e-4f, normDeg(geom::BOARD_DEG + (b - 2.0f) * geom::BOARD_SPREAD_DEG), d);
   }
   TEST_ASSERT_FLOAT_WITHIN(1e-4f, normDeg(geom::BOARD_DEG), boardDeg(2));
-  TEST_ASSERT_FLOAT_WITHIN(1e-4f, normDeg(geom::BOARD_DEG), burnDeg());
+  TEST_ASSERT_FLOAT_WITHIN(1e-4f, static_cast<float>(geom::BURN_DEG), burnDeg());
+  TEST_ASSERT_TRUE(geom::BURN_DEG >= 0 && geom::BURN_DEG < geom::TURRET_MAX_DEG);  // no wrap
+  // burn spot is clear of the board fan
+  TEST_ASSERT_TRUE(burnDeg() > boardDeg(4));
 }
 
 void test_turret_steps_in_range() {
@@ -97,6 +103,13 @@ void test_turret_steps_in_range() {
   TEST_ASSERT_EQUAL_INT32(lroundf(normDeg(tr) * geom::TURRET_STEPS_PER_DEG), turretDegToSteps(0.0f));
 }
 
+// At the probe position the load station is at least one full pitch away from every shelf.
+void test_probe_position_faces_no_shelf() {
+  const float x = rackNoShelfAtLoadMm();
+  TEST_ASSERT_TRUE(x >= 0.0f && x <= kRackMaxMm + cfg::RACK_ZERO_TRIM_MM);
+  for (int i = 0; i < 52; i++) TEST_ASSERT_TRUE(fabsf(rackLoadMm(i) - x) >= geom::SHELF_PITCH - 1e-4f);
+}
+
 int main(int, char**) {
   UNITY_BEGIN();
   RUN_TEST(test_rack_eject_positions);
@@ -107,5 +120,6 @@ int main(int, char**) {
   RUN_TEST(test_board_and_burn_angles);
   RUN_TEST(test_board_fan_does_not_wrap);
   RUN_TEST(test_turret_steps_in_range);
+  RUN_TEST(test_probe_position_faces_no_shelf);
   return UNITY_END();
 }

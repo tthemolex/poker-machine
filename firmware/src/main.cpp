@@ -10,7 +10,8 @@
 //                   SET long  = misdeal -> button stays
 //   After the river the hand ends and the button advances automatically.
 //   Faults: everything stops, LED blinks fast, OLED shows the fault; fix it, press GO.
-//   SET held while powering on: purge the rack (every shelf into the burn tray).
+//   SET held while powering on: purge the rack (every shelf onto the burn spot).
+//   GO held while powering on: SERVICE / NO MOTION mode (set VREF), reset to exit.
 //   Serial console (115200, "help") for calibration between hands.
 //
 //  Game logic lives in lib/dealer_core (unit-tested on the host); this file only
@@ -106,11 +107,11 @@ bool startHand() {
   if (lf == Fault::DoubleFeed) {
     const int shelf = machine.lastLoadedShelf();
     faultWait(lf);
-    // Recovery: throw the doubled shelf into the burn tray. The user puts those
+    // Recovery: throw the doubled shelf onto the burn spot. The user puts those
     // cards back in the hopper and presses GO again.
     busy("Clearing double");
     if (!check(machine.powerUp()) && !check(machine.purgeShelf(shelf))) machine.powerDown();
-    startNote = "Return burn tray cards";
+    startNote = "Return burn-spot cards";
     return false;
   }
   if (check(lf)) return false;
@@ -205,6 +206,33 @@ void setup() {
   machine.begin(s.rackMask);
   const bool purge = ui::setHeldRaw();
   updateBattery();
+
+  // GO held at power-on / reset: SERVICE / NO MOTION mode for setting the TMC2209
+  // VREF with VM on and the motors connected. EN stays HIGH (driver outputs off),
+  // no homing, servo never attached, no battery gate. Console works (motion
+  // commands refused). Only a reset leaves this mode.
+  if (ui::goHeldRaw()) {
+    console::setServiceMode(true);
+    Serial.printf("SERVICE MODE: no motion, steppers disabled (EN high), servo detached. "
+                  "Battery %.2f V. Set VREF now. Console: help. Reset to exit.\n",
+                  static_cast<double>(vbat));
+    ui::setPattern(LedPattern::Service);
+    for (;;) {
+      console::poll(machine, game);
+      if (millis() - lastVbatMs > 1000) updateBattery();
+      ui::tick();
+      ui::drawService(vbat, machine.rack().count());
+      delay(2);
+    }
+  }
+
+  // No motor moves without a usable battery (USB-only development, flat pack):
+  // show the fault and wait until the battery is switched on / charged.
+  while (!dealer::batteryAllowsStart(battery)) {
+    Serial.printf("Battery %.2f V: not homing.\n", static_cast<double>(vbat));
+    faultWait(battery == dealer::BatteryLevel::Absent ? Fault::NoBattery : Fault::BatteryLow);
+    updateBattery();
+  }
 
   busy("Homing");
   if (!check(machine.powerUp())) {

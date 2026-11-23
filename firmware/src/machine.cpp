@@ -3,6 +3,7 @@
 #include <AccelStepper.h>
 #include <Arduino.h>
 #include <ESP32Servo.h>
+#include <bootloader_random.h>
 #include <esp_random.h>
 
 #include "config.h"
@@ -15,7 +16,8 @@ namespace {
 AccelStepper turret(AccelStepper::DRIVER, PIN_TURN_STEP, PIN_TURN_DIR);
 AccelStepper rackAxis(AccelStepper::DRIVER, PIN_RACK_STEP, PIN_RACK_DIR);
 Servo pusher;
-ESP32PWM feedPwm;
+ESP32PWM feedPwm;   // DRV8833 IN1 (forward)
+ESP32PWM feedRev;   // DRV8833 IN2 (reverse, extra-card probe)
 ESP32PWM launchPwmOut;
 
 // Hardware RNG. True random while the RF subsystem runs; otherwise seeded from
@@ -25,6 +27,12 @@ class EspRandom : public dealer::RandomSource {
   uint32_t next32() override { return esp_random(); }
 };
 EspRandom hwRng;
+
+// SAR-ADC entropy on while dealing (no ADC reads happen then), off otherwise.
+struct EntropyScope {
+  EntropyScope() { if (cfg::HW_ENTROPY_DURING_DEAL) bootloader_random_enable(); }
+  ~EntropyScope() { if (cfg::HW_ENTROPY_DURING_DEAL) bootloader_random_disable(); }
+};
 
 inline bool active(int pin) { return digitalRead(pin) == LOW; }  // all sensors active LOW
 
@@ -71,13 +79,13 @@ void Machine::begin(uint64_t rackMask) {
 
   pinMode(PIN_STEP_EN, OUTPUT);
   digitalWrite(PIN_STEP_EN, HIGH);  // drivers off until needed
-  pinMode(PIN_FEED_IN2, OUTPUT);
-  digitalWrite(PIN_FEED_IN2, LOW);
   for (int p : {PIN_IR_LOAD, PIN_IR_EXIT, PIN_HOME_TURN, PIN_HOME_RACK}) pinMode(p, INPUT_PULLUP);
   analogSetPinAttenuation(PIN_VBAT, ADC_11db);
 
   for (int t = 0; t < 4; t++) ESP32PWM::allocateTimer(t);
   feedPwm.attachPin(PIN_FEED_IN1, cfg::MOTOR_PWM_HZ, 8);
+  feedRev.attachPin(PIN_FEED_IN2, cfg::MOTOR_PWM_HZ, 8);
+  feedRev.write(0);
   launchPwmOut.attachPin(PIN_LAUNCH, cfg::MOTOR_PWM_HZ, 8);
   feedPwm.write(0);
   launchPwmOut.write(0);
@@ -101,10 +109,10 @@ Fault Machine::powerUp() {
   powered_ = true;
   // The rack leadscrew is self-locking, so it only re-homes at boot and after a fault.
   if (!rackHomed_ && !homeRack()) return fail(Fault::RackHoming);
-  // The turret may have been bumped while unpowered: always re-home. It was
-  // parked at 0 deg, so this is normally a short move.
-  const uint32_t to = turretParked_ ? cfg::TURN_REHOME_TIMEOUT_MS : cfg::TURN_HOME_TIMEOUT_MS;
-  if (!homeTurret(to)) return fail(Fault::TurretHoming);
+  // The turret may have been bumped while unpowered: always re-home, with a search
+  // bounded to a window around where it should be (parked at 0, or the last
+  // counter value after a fault). See dealer::TurretHoming.
+  if (!homeTurret()) return fail(Fault::TurretHoming);
   return Fault::None;
 }
 
@@ -144,11 +152,44 @@ Fault Machine::fail(Fault f) {
   return f;
 }
 
-bool Machine::homeTurret(uint32_t timeoutMs) {
-  const int32_t backoff = lroundf(cfg::TURN_BACKOFF_DEG * geom::TURRET_STEPS_PER_DEG);
-  turretHomed_ = homeAxis(turret, PIN_HOME_TURN, cfg::TURN_HOMING_SPEED, backoff, timeoutMs);
-  turretParked_ = turretHomed_;
-  return turretHomed_;
+bool Machine::homeTurret() {
+  const float spd = geom::TURRET_STEPS_PER_DEG;
+  const int32_t full = lroundf(geom::TURRET_MAX_DEG * spd);
+  // Believed position above home: 0 when parked (or at boot, the turret parks at 0
+  // before every power-down); the step counter after a fault.
+  int32_t est = 0;
+  if (!turretParked_ && turretCounterValid_) {
+    est = turret.currentPosition() - lroundf(cfg::TURRET_ZERO_TRIM_DEG * spd);
+    if (est < 0) est = 0;
+    if (est > full) est = full;
+  }
+  dealer::TurretHoming search({est, lroundf(cfg::TURN_SEARCH_WINDOW_DEG * spd),
+                               lroundf(cfg::TURN_ZONE_MAX_DEG * spd),
+                               lroundf(cfg::TURN_BACKOFF_DEG * spd)});
+  turret.setCurrentPosition(0);  // search positions are relative to here
+  turretHomed_ = turretParked_ = false;
+  const uint32_t t0 = millis();
+  for (;;) {
+    const int32_t pos = turret.currentPosition();
+    const dealer::HomingCmd c = search.step(pos, active(PIN_HOME_TURN));
+    if (c.kind == dealer::HomingCmd::Done) break;
+    if (c.kind == dealer::HomingCmd::Fail || millis() - t0 > cfg::TURN_HOME_TIMEOUT_MS) {
+      turret.setSpeed(0);
+      turretCounterValid_ = false;
+      Serial.println("Turret: hall not found near the expected angle. Turn the turret by hand "
+                     "to the home mark, then press GO.");
+      return false;
+    }
+    if (c.target != pos) {
+      const float v = (c.speed == dealer::HomingSpeed::Slow) ? cfg::TURN_HOMING_SLOW
+                                                             : cfg::TURN_HOMING_SPEED;
+      turret.setSpeed(c.target > pos ? v : -v);
+      turret.runSpeed();
+    }
+  }
+  turret.setCurrentPosition(0);  // home = 0 deg (trim is applied to targets)
+  turretHomed_ = turretParked_ = turretCounterValid_ = true;
+  return true;
 }
 
 bool Machine::homeRack() {
@@ -172,13 +213,28 @@ void Machine::runBoth() {
   }
 }
 
-void Machine::feedOn() { feedPwm.write(cfg::FEED_PWM); }
-void Machine::feedOff() { feedPwm.write(0); }
+void Machine::feedOn() {
+  feedRev.write(0);
+  feedPwm.write(cfg::FEED_PWM);
+}
+void Machine::feedOff() {
+  feedPwm.write(0);
+  feedRev.write(0);
+}
 
 void Machine::launchSet(uint8_t pwm) {
   if (pwm == launchNow_) return;
+  if (pwm > launchNow_) {
+    // Soft ramp up: a 130 motor from standstill at full PWM can trip the DRV8833
+    // over-current protection and dip the 5 V rail.
+    constexpr int kSteps = 12;
+    for (int i = 1; i <= kSteps; i++) {
+      launchPwmOut.write(launchNow_ + (pwm - launchNow_) * i / kSteps);
+      delay(cfg::LAUNCH_RAMP_MS / kSteps);
+    }
+  }
   launchPwmOut.write(pwm);
-  if (pwm > 0) delay(cfg::SPINUP_MS);  // spin up / settle to the new speed
+  if (pwm > 0) delay(cfg::SPINUP_MS);  // settle to the new speed
   launchNow_ = pwm;
 }
 
@@ -239,10 +295,34 @@ Fault Machine::loadCards() {
     bool empty;
     const Fault f = loadOne(shelf, &blocked, &empty);
     if (f != Fault::None) return f;
-    if (empty) break;
+    if (empty) {
+      storage::saveRack(rack_.mask());
+      return Fault::None;  // hopper empty before the rack was full
+    }
   }
   storage::saveRack(rack_.mask());
-  return Fault::None;
+  return cfg::EXTRA_CARD_PROBE ? probeExtraCard() : Fault::None;  // rack full
+}
+
+// Rack full: is there still a card in the hopper? The rack goes to a position
+// where no shelf faces the load station, the roller runs until the loader beam
+// sees a card's leading edge (or NO_CARD_MS), then reverses to pull it back.
+// The card is never driven into a full shelf.
+Fault Machine::probeExtraCard() {
+  rackAxis.moveTo(dealer::rackMmToSteps(dealer::rackNoShelfAtLoadMm()));
+  runBoth();
+  feedOn();
+  const bool saw = waitFor(PIN_IR_LOAD, true, cfg::NO_CARD_MS);
+  feedPwm.write(0);
+  if (!saw) {
+    feedOff();
+    return Fault::None;
+  }
+  feedRev.write(cfg::FEED_PWM);
+  delay(cfg::PROBE_REVERSE_MS);
+  feedOff();
+  Serial.println("Rack is full but the hopper still has a card: remove the extra cards.");
+  return fail(Fault::ExtraCards);
 }
 
 // ---------------- Deal ----------------
@@ -271,6 +351,7 @@ Fault Machine::ejectShelf(int shelf, float deg, uint8_t pwm, bool emptyIsFault) 
 }
 
 Fault Machine::executePlan(const dealer::Plan& plan) {
+  EntropyScope entropy;
   for (uint8_t i = 0; i < plan.count; i++) {
     const dealer::DealAction& a = plan.actions[i];
     const int shelf = rack_.pickRandom(hwRng);  // the shuffle
@@ -284,15 +365,16 @@ Fault Machine::executePlan(const dealer::Plan& plan) {
 }
 
 Fault Machine::purgeShelf(int shelf) {
-  const Fault f = ejectShelf(shelf, dealer::burnDeg(), cfg::LAUNCH_BURN, false);
+  const Fault f = ejectShelf(shelf, dealer::burnDeg(), cfg::LAUNCH_PURGE, false);
   launchSet(0);
   return f == Fault::RackEmpty ? Fault::None : f;
 }
 
 Fault Machine::purgeAll() {
+  EntropyScope entropy;  // not needed for the order, keeps the ADC handling uniform
   for (int s = 0; s < dealer::Rack::kShelves; s++) {
     if (!rack_.isOccupied(s)) continue;
-    const Fault f = ejectShelf(s, dealer::burnDeg(), cfg::LAUNCH_BURN, false);
+    const Fault f = ejectShelf(s, dealer::burnDeg(), cfg::LAUNCH_PURGE, false);
     if (f != Fault::None) return f;
   }
   launchSet(0);
@@ -317,7 +399,10 @@ void Machine::calAim(float deg) {
   runBoth();
 }
 void Machine::calLaunch(uint8_t pwm) { launchSet(pwm); }
-void Machine::calFeed(uint8_t pwm) { feedPwm.write(pwm); }
+void Machine::calFeed(uint8_t pwm) {
+  feedRev.write(0);
+  feedPwm.write(pwm);
+}
 void Machine::calServo(int angle) {
   if (!pusher.attached()) pusher.attach(PIN_PUSHER);
   pusher.write(angle);
@@ -333,6 +418,10 @@ bool Machine::sensor(int pin) { return active(pin); }
 // ---------------- Battery ----------------
 
 float Machine::readVbat() {
+  // Re-apply the ADC setup: bootloader_random_disable() resets SAR ADC registers.
+  analogSetWidth(12);
+  analogSetPinAttenuation(PIN_VBAT, ADC_11db);
+  (void)analogReadMilliVolts(PIN_VBAT);  // discard the first conversion
   uint32_t mv = 0;
   for (uint8_t i = 0; i < cfg::VBAT_SAMPLES; i++) mv += analogReadMilliVolts(PIN_VBAT);
   return dealer::vbatFromPinMv(static_cast<float>(mv) / cfg::VBAT_SAMPLES);

@@ -20,7 +20,7 @@ import sys
 import numpy as np
 
 sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parent))
-from cad_common import export_placed, load_mesh, params, table  # noqa: E402
+from cad_common import export_placed, load_mesh, params, table, to_manifold  # noqa: E402
 
 TOL = 0.2
 rows = []
@@ -45,7 +45,7 @@ def first_hit(mesh, origin, direction):
 def main():
     P = params()
     n, p, t = int(P["SHELF_COUNT"]), P["SHELF_PITCH"], P["CARD_T"]
-    names = ["rack_comb_px", "rack_bottom_plate", "rack_top_plate", "hopper_body", "hopper_gate", "v_feed_rollers",
+    names = ["v_pinch_rollers", "rack_comb_px", "rack_bottom_plate", "rack_top_plate", "hopper_body", "hopper_gate", "v_feed_rollers",
              "launcher_floor", "launcher_frame", "v_idler_roller", "v_wheel_launcher", "v_pusher_blade",
              "v_ir_exit_tx", "idler_arm"]
     paths = export_placed(names, 0, 0)
@@ -90,6 +90,19 @@ def main():
     gb = zhits(M["hopper_gate"], 0.0, P["HOP_Y_FRONT"] - 1.0, down=False).min()
     thr = gb - P["Z_LOAD"]
     check("throat under gate (single card)", float(thr), f"{t:.2f} < g < {2 * t:.2f}", t < thr < 2 * t)
+    # 3b. pinch pair (D-18): positive drive until the card is (almost) home
+    pr = M["v_pinch_rollers"]
+    pb = zhits(pr, P["PINCH_X"], P["PINCH_Y"], down=False).min()
+    psq = (P["Z_LOAD"] + t) - pb
+    check("pinch squeeze on the card", float(psq), f"0 < s < {t:.2f}", 0 < psq < t)
+    pfront = pr.bounds[1][1]
+    check("pinch roller clear of rack back face", float(P["RACK_Y0"] - pfront), ">= 0.5", P["RACK_Y0"] - pfront >= 0.5 - 1e-6)
+    coast = P["FINGER_Y"] - (P["PINCH_Y"] + P["CARD_W"])
+    check("unpowered coast after the pinch releases", float(coast), "<= 5.0", coast <= 5.0 + 1e-6)
+    hand = P["FEED_Y"] - (P["PINCH_Y"] - P["CARD_W"])
+    check("feed->pinch hand-off overlap", float(hand), "> 0 (tail still on feed roller)", hand > 0)
+    ratio = (P["PINCH_D"] * P["PUL_FEED_D"]) / (P["FEED_D"] * P["PUL_PINCH_D"])
+    check("pinch / feed surface-speed ratio", float(ratio), "1.00 .. 1.10 (keeps card taut)", 1.0 <= ratio <= 1.10, "")
     check("hopper card end clearance", float(P["HOP_XI"] - P["CARD_L"] / 2), ">= 0.3", P["HOP_XI"] - P["CARD_L"] / 2 >= 0.3)
 
     # 4. eject station / launcher nip
@@ -136,6 +149,28 @@ def main():
     others = min(ymin_frame, M["launcher_floor"].bounds[0][1], M["v_ir_exit_tx"].bounds[0][1], M["v_wheel_launcher"].bounds[0][1], M["idler_arm"].bounds[0][1])
     check("load-stop finger face (card front stops here)", float(stop), f"rack face {P['RACK_Y1']} + >= 0.5", stop - P["RACK_Y1"] >= 0.5 - 1e-6)
     check("stopped card clears other launcher parts", float(others - stop), ">= 0.5", others - stop >= 0.5 - 1e-6)
+
+    # 8. exit path (D-20): sweep the eject card along +Y through nip and slot; only the
+    #    intended nip contact (wheel / idler squeeze) may touch it.
+    ex = ["card_eject", "turret_shell", "slot_panel", "launcher_frame", "launcher_floor", "idler_arm", "top_cap",
+          "v_ir_exit_tx", "v_ir_exit_rx", "v_motor_130", "v_spring_idler", "v_idler_shafts"]
+    exm = export_placed(ex, 0, 0)
+    card = to_manifold(load_mesh(exm["card_eject"]))
+    obst = {n: to_manifold(load_mesh(exm[n])) for n in ex[1:] if exm[n] is not None}
+    worst, where = 0.0, ""
+    steps = np.arange(0.0, P["TURRET_RI"] + 60 - P["RACK_YC"] + P["CARD_W"] / 2, 2.0)
+    for dy in steps:
+        c = card.translate([0.0, float(dy), 0.0])
+        for n, o in obst.items():
+            v = (c ^ o).volume()
+            if v > worst:
+                worst, where = v, f"{n} at +{dy:.0f} mm"
+    check("exit sweep: card clear of shell / panel / launcher", float(worst), f"< 0.01 mm3 over {len(steps)} steps", worst < 0.01, "mm3")
+    sx = P["BT_XO"] + 0.2 - P["CARD_L"] / 2
+    check("exit slot side clearance per side", float(sx), ">= 1.5", sx >= 1.5)
+    check("exit slot below / above card plane", float(min(P["Z_EJECT"] - P["SLOT_Z0"], P["SLOT_Z1"] - P["Z_EJECT"] - t)), ">= 1.5", min(P["Z_EJECT"] - P["SLOT_Z0"], P["SLOT_Z1"] - P["Z_EJECT"] - t) >= 1.5)
+    if where:
+        print("exit sweep worst contact:", where)
 
     print(table(rows, ["check", "value", "limit", "result"]))
     nf = sum(r[3] == "FAIL" for r in rows)

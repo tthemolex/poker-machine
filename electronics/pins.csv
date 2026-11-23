@@ -3,7 +3,7 @@ TURN_STEP,25,out,TMC2209 turret STEP,turret driver 16 usteps (MS1=MS2=VIO)
 TURN_DIR,26,out,TMC2209 turret DIR,swap one coil pair if the turret turns the wrong way
 RACK_STEP,27,out,TMC2209 rack STEP,rack driver 8 usteps (MS1=MS2=GND)
 RACK_DIR,14,out,TMC2209 rack DIR,
-STEP_EN,13,out,TMC2209 turret EN + TMC2209 rack EN,shared enable; active LOW; HIGH = motors off (idle)
+STEP_EN,13,out,TMC2209 turret EN + TMC2209 rack EN,shared enable; active LOW; HIGH = motors off (idle); 10k pull-up to 3V3 keeps drivers off during reset/flash
 FEED_IN1,32,out,DRV8833 AIN1,loader N20 PWM
 FEED_IN2,33,out,DRV8833 AIN2,loader N20 direction (LOW = feed)
 LAUNCH,19,out,DRV8833 BIN1 (IN3),launcher 130 motor PWM; BIN2 (IN4) tied to GND

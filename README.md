@@ -19,9 +19,10 @@ burn + turn and burn + river, one GO press per street. The dealer button advance
 * **Correct dealing order**: hole cards one at a time, clockwise, starting left of the button; 3 burns +
   5 board cards; misdeal keeps the button, an early "everyone folded" end advances it.
 * **One turret does everything**: rack, loader, pusher and launcher sit on a lazy-susan turret that
-  aims the throw (NEMA17 + 200T ring, 10:1). Burns drop into a tray on the turret.
+  aims the throw (NEMA17 + 200T ring, 10:1).
 * **Variable throw**: one 130 motor wheel launcher, full power to a seat, medium to the board (fanned),
-  a dribble for burns.
+  a slow dribble for burns onto a burn spot beside the board. At the end of the hand the burn pile goes
+  back into the hopper with the other cards.
 * **Fault handling**: loader/launcher jam, empty shelf, double feed (beam-blocked time), card count
   not 52, homing failures, low battery. The machine stops and waits for GO.
 * **Battery powered**: TalentCell 3S 6 Ah in the base, about 280 hands (about 7-14 h of play) per
@@ -39,12 +40,12 @@ Measured from the meshes of every placed part (printed, vendor, cards) at turret
 
 | | measured | hard limit | margin | stretch target | gap to stretch |
 |---|---|---|---|---|---|
-| footprint (2 x max radius) | **195.0 mm** | 200 mm | +5.0 mm | 170 mm | +25.0 mm |
+| footprint (2 x max radius) | **199.0 mm** | 200 mm | +1.0 mm | 170 mm | +29.0 mm |
 | height | **207.5 mm** | 220 mm | +12.5 mm | 180 mm | +27.5 mm |
 
-Hard limits: **PASS**. Max axis-aligned bounding box side: 195.0 mm.
+Hard limits: **PASS**. Max axis-aligned bounding box side: 199.0 mm.
 
-Radius drivers: base_shell 97.5, ui_bezel 97.5, turntable 97.5, burn_tray 97.5, turret_shell 97.5.
+Radius drivers: base_shell 99.5, ui_bezel 99.5, turntable 99.5, slot_panel 99.5, turret_shell 99.5.
 Height drivers: top_cap 207.5, hopper_lid 207.5, rack_comb_px 205.0, rack_comb_nx 205.0.
 
 The size-optimization pass and every size trade-off are in [docs/DECISIONS.md](docs/DECISIONS.md). The stretch target cannot be met with this battery and a 52-slot random-access rack (D-01, D-04).
@@ -66,7 +67,7 @@ printed part: [renders/](renders/) (index in [BUILD.md](docs/BUILD.md#render-ind
 |---|---|
 | Load | The N20 roller feeds the bottom card from the hopper into the next empty shelf at the load station. The IR beam counts cards and flags double feeds. |
 | Select | The firmware picks a random occupied shelf. The T8 leadscrew lifts the rack so that shelf sits at the eject station, 3 shelves below the load station. |
-| Aim | The turret turns to the seat, board or burn angle (0-360 degrees only, so the cables just need a service loop). |
+| Aim | The turret turns to the seat, board or burn angle (0-360 degrees only, so all turret wiring is one ribbon-cable clock spring in the bearing centre). |
 | Push + throw | The MG90S rack-and-pinion blade pushes the card out between the shelf fins into the launcher wheel nip. |
 
 Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/DECISIONS.md](docs/DECISIONS.md)
@@ -121,3 +122,10 @@ Then follow [docs/BUILD.md](docs/BUILD.md) section 8 (calibration) and [docs/FIR
 * **Battery voltage reading** depends on resistor tolerance and ESP32 ADC calibration (+/-2 %);
   calibrate `VBAT_CAL` against a multimeter.
 * Power figures are calculated (electronics/power_budget.py), not measured.
+
+### Known deviations from the spec
+
+* **No burn tray on the turret** ([DECISIONS D-20](docs/DECISIONS.md)): it cannot fit inside the
+  envelope, because a card leaving the nip needs more free path than there is. Burns are launched very
+  slowly, face down, onto a burn spot on the table at `BURN_DEG` = 22 degrees, next to the board. Collect
+  the burn pile with the board cards at the end of the hand.

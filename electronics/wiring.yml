@@ -9,10 +9,11 @@
 #   * Pins are referenced by label in `connections` so the diagram reads like the schematic.
 #
 #  Rails: 12V = battery after the main rocker switch. 5V = Mini560 output.
-#         3V3 = ESP32 on-board regulator (logic only: sensors, OLED, TMC VIO).
+#         3V3 = ESP32 on-board regulator (logic only: OLED, TMC VIO/MS, button/endstop GND bus).
 #  All grounds are common (battery -, buck -, ESP32 GND, driver GND).
-#  Location: base = static puck under the turret; turret = rotating part. Turret wires
-#  pass up through the lazy susan ID with a service loop (turret moves 0..360 deg only).
+#  Location: base = static puck under the turret; turret = rotating part. Every base<->turret
+#  wire is one conductor of the 20-way 1.27 mm ribbon clock spring in the bearing ID (D-19);
+#  conductor allocation: docs/BUILD.md section 6 (turret moves 0..360 deg only).
 # =============================================================================
 
 metadata:
@@ -88,6 +89,9 @@ connectors:
       - type: Electrolytic capacitor 100 uF 25 V
         subtype: across VM / PGND, at the driver pins
         qty: 1
+      - type: Resistor 10 k
+        subtype: EN to VIO (3V3) pull-up for the shared EN line, keeps both drivers off during ESP32 reset / flashing
+        qty: 1
   TMC_RACK:
     type: TMC2209 StepStick
     subtype: rack driver, 8 usteps (MS1=MS2=GND)
@@ -137,7 +141,7 @@ connectors:
   # ---------------------------------------------------------------- sensors / UI
   IRRX_LOAD:
     type: IR break-beam receiver
-    subtype: loader, turret (open collector)
+    subtype: loader, turret (open collector, VCC 5 V)
     pinlabels: [VCC, GND, OUT]
     pincolors: [RD, BK, WH]
   IRTX_LOAD:
@@ -147,7 +151,7 @@ connectors:
     pincolors: [RD, BK]
   IRRX_EXIT:
     type: IR break-beam receiver
-    subtype: launcher entry, turret (open collector)
+    subtype: launcher entry, turret (open collector, VCC 5 V)
     pinlabels: [VCC, GND, OUT]
     pincolors: [RD, BK, WH]
   IRTX_EXIT:
@@ -294,7 +298,7 @@ cables:
     wirecount: 4
     colors: [BK, GN, RD, BU]
     length: 0.35
-    notes: up through the bearing ID (service loop)
+    notes: turret, via the ribbon clock spring (D-19)
 
   # ------------------------------------------------------------- DC motors + servo
   W_DRV:
@@ -309,28 +313,28 @@ cables:
     wirecount: 2
     colors: [RD, BK]
     length: 0.35
-    notes: turret, service loop
+    notes: turret, via the ribbon clock spring (D-19)
   W_130:
     gauge: 0.25 mm2
     show_equiv: false
     wirecount: 2
     colors: [RD, BK]
     length: 0.35
-    notes: turret, service loop
+    notes: turret, via the ribbon clock spring (D-19)
   W_SERVO:
     <<: *sig
     wirecount: 3
     colors: [OG, RD, BN]
     wirelabels: [PUSHER, 5V, GND]
     length: 0.35
-    notes: servo extension, turret, service loop
+    notes: turret, via the ribbon clock spring (D-19)
 
   # ------------------------------------------------------------- sensors
   W_IR_LOAD:
     <<: *sig
     wirecount: 3
     colors: [WH, RD, BK]
-    wirelabels: [IR_LOAD, 3V3, GND]
+    wirelabels: [IR_LOAD, 5V, GND]
     length: 0.35
   W_IRTX_LOAD:
     <<: *sig
@@ -342,7 +346,7 @@ cables:
     <<: *sig
     wirecount: 3
     colors: [WH, RD, BK]
-    wirelabels: [IR_EXIT, 3V3, GND]
+    wirelabels: [IR_EXIT, 5V, GND]
     length: 0.35
   W_IRTX_EXIT:
     <<: *sig
@@ -474,11 +478,11 @@ connections:
     - W_SERVO: [2-3]
     - SERVO: [V+, GND]
 
-  # ---- IR break-beams (receivers on 3V3 so OUT never exceeds 3.3 V; emitters on 5V)
+  # ---- IR break-beams (all on 5V; receiver OUT is open-collector, pulled up to 3.3 V by the ESP32 only)
   - - ESP32: [GPIO15]
     - W_IR_LOAD: [1]
     - IRRX_LOAD: [OUT]
-  - - BUS3V3: [3V3, GND]
+  - - PWR5: [+5V, GND]
     - W_IR_LOAD: [2-3]
     - IRRX_LOAD: [VCC, GND]
   - - PWR5: [+5V, GND]
@@ -487,7 +491,7 @@ connections:
   - - ESP32: [GPIO4]
     - W_IR_EXIT: [1]
     - IRRX_EXIT: [OUT]
-  - - BUS3V3: [3V3, GND]
+  - - PWR5: [+5V, GND]
     - W_IR_EXIT: [2-3]
     - IRRX_EXIT: [VCC, GND]
   - - PWR5: [+5V, GND]

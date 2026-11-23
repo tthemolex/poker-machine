@@ -36,7 +36,7 @@ Reference files:
 ## 2. Buy the parts
 
 Order everything in [BOM.csv](BOM.csv). Prices are rough per-line estimates
-(PLN / EUR, late 2026); the whole kit is about **840 PLN / 195 EUR**, of which the battery is
+(PLN / EUR, late 2026); the whole kit is about **870 PLN / 205 EUR**, of which the battery is
 about a quarter. Notes:
 
 * **Battery**: TalentCell YB1206000-USB, 145 x 85 x 28 mm. Measure yours: the base cradle is
@@ -48,8 +48,8 @@ about a quarter. Notes:
   The firmware assumes 8 mm lead (`LEAD_MM`).
 * **GT2 20T pulley**: file or turn off the top flange so it meshes with the belt-on-hub ring.
 * **TMC2209 modules**: the VREF math below assumes 0.11 ohm sense resistors (BTT/FYSETC style).
-* **IR break-beams**: open-collector receivers (Adafruit 2167 style). They are powered from 3.3 V so
-  the output never exceeds 3.3 V.
+* **IR break-beams**: open-collector receivers (Adafruit 2167 style). Emitters and receivers run on 5 V; the
+  receiver output is open-collector and only pulled up to 3.3 V by the ESP32, so it is safe.
 
 ## 3. Print the parts
 
@@ -77,34 +77,38 @@ printed part).
 <!-- PRINT_TABLE: generated from cad/parts.csv (layer/walls/infill added per the general settings) -->
 | Part | STL | Qty | Material | Layer | Walls | Infill | Supports | Orientation | Notes |
 |---|---|---|---|---|---|---|---|---|---|
-| [base_shell](../renders/parts/base_shell.png) | [base_shell.stl](../cad/stl/base_shell.stl) | 1 | PETG | 0.2 | 4 | 20 % | none | upright floor on bed | UI cut is a notch from the top edge; door rebate ceiling is a short bridge (<=5.5 mm); rocker hole top edge bridges 13 mm |
-| [battery_door](../renders/parts/battery_door.png) | [battery_door.stl](../cad/stl/battery_door.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | flat outside face on bed | 4x M3 CSK into floor inserts; battery drops out downward |
-| [base_deck](../renders/parts/base_deck.png) | [base_deck.stl](../cad/stl/base_deck.stl) | 1 | PETG | 0.2 | 4 | 40 % | none | upside down (top face on bed) | pancake NEMA standoffs point up in print |
-| [hall_post](../renders/parts/hall_post.png) | [hall_post.stl](../cad/stl/hall_post.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | upright | pegs into the deck; A3144 glued in the groove |
-| [ui_bezel](../renders/parts/ui_bezel.png) | [ui_bezel.stl](../cad/stl/ui_bezel.stl) | 1 | PETG black | 0.2 | 3 | 20 % | none | upright (installed Z up) | OLED window + 2x 12 mm buttons + LED; radial holes are small (<=12 mm) bridges |
-| [turntable](../renders/parts/turntable.png) | [turntable.stl](../cad/stl/turntable.stl) | 1 | PETG | 0.15 | 4 | 40 % | none | upside down (top face on bed) | 200T ring hub underneath (GT2 belt glued teeth-out); CSK holes print as upward cones; magnet pocket |
-| [rack_comb](../renders/parts/rack_comb.png) | [rack_comb.stl](../cad/stl/rack_comb.stl) | 2 | PLA | 0.12 | 2 on fins, 3 elsewhere | 100 % | none | lying on outer face fins vertical | fins 0.9 mm = documented exception to the 1.2 mm wall rule (D-01); both combs identical (one turned 180 deg) |
+| [base_shell](../renders/parts/base_shell.png) | [base_shell.stl](../cad/stl/base_shell.stl) | 1 | PETG | 0.2 | 4 | 20 % | none | upright floor on bed | battery-door rebate ceiling is a 4 mm horizontal cantilever ring at z 1.2 (no supports needed); UI cut is a notch from the top edge; rocker/jack hole roofs <= 13 mm |
+| [battery_door](../renders/parts/battery_door.png) | [battery_door.stl](../cad/stl/battery_door.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | flat outside face on bed | 4x M3 CSK into floor inserts; finger notch through the flange edge; battery drops out downward |
+| [base_deck](../renders/parts/base_deck.png) | [base_deck.stl](../cad/stl/base_deck.stl) | 1 | PETG | 0.2 | 4 | 40 % | none | upside down (top face on bed) | pancake NEMA standoffs up; radial ribbon slot (D-19); full-chord UI cut |
+| [hall_post](../renders/parts/hall_post.png) | [hall_post.stl](../cad/stl/hall_post.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | upside down (sensor face on bed) | pegs into the deck; A3144 glued in the groove |
+| [spool_hub](../renders/parts/spool_hub.png) | [spool_hub.stl](../cad/stl/spool_hub.stl) | 1 | PETG | 0.2 | 3 | 40 % | none | upside down (top on bed) | static clock-spring hub for the ribbon harness (D-19); pegs into the deck |
+| [ui_bezel](../renders/parts/ui_bezel.png) | [ui_bezel.stl](../cad/stl/ui_bezel.stl) | 1 | PETG black | 0.2 | 3 | 20 % | none | upright (installed Z up) | radial 12 mm button / 5 mm LED holes; OLED window top is a 23 mm bridge; bosses keep >= 1.2 mm behind the flush recesses |
+| [turntable](../renders/parts/turntable.png) | [turntable.stl](../cad/stl/turntable.stl) | 1 | PETG | 0.15 | 4 | 40 % | none | upside down (top face on bed) | 200T ring hub (GT2 belt glued teeth-out D-11) with a 0.6 mm seat lip; CSK holes print as upward cones; magnet through-hole |
+| [shell_anchor](../renders/parts/shell_anchor.png) | [shell_anchor.stl](../cad/stl/shell_anchor.stl) | 4 | PETG | 0.2 | 4 | 40 % | none | upright | CSK M3 from below into the turntable; shell tab screwed from above (cap off) |
+| [rack_comb](../renders/parts/rack_comb.png) | [rack_comb.stl](../cad/stl/rack_comb.stl) | 2 | PLA | 0.12 | 2 on fins, 3 elsewhere | 100 % | none | lying on outer face fins vertical | fins 0.9 mm = documented exception to the 1.2 mm wall rule (D-01); pilot holes 3.3 deep keep 1.2 mm; both combs identical (one turned 180 deg) |
 | [rack_bottom_plate](../renders/parts/rack_bottom_plate.png) | [rack_bottom_plate.stl](../cad/stl/rack_bottom_plate.stl) | 1 | PLA | 0.2 | 3 | 100 % | none | flat | 1.2 mm; glued (CA) into the comb rebates |
 | [rack_top_plate](../renders/parts/rack_top_plate.png) | [rack_top_plate.stl](../cad/stl/rack_top_plate.stl) | 1 | PLA | 0.2 | 3 | 100 % | none | flat | 1.2 mm; glued (CA) into the comb rebates |
-| [rack_carriage](../renders/parts/rack_carriage.png) | [rack_carriage.stl](../cad/stl/rack_carriage.stl) | 1 | PETG | 0.2 | 3 | 40 % | none | upright (bores vertical) | 4x LM8UU pressed in; 4x M3 thread-forming into comb pilot holes |
-| [rack_nut_arm](../renders/parts/rack_nut_arm.png) | [rack_nut_arm.stl](../cad/stl/rack_nut_arm.stl) | 1 | PETG | 0.2 | 4 | 40 % | none | arm flat on bed flange vertical | 4 inserts for the T8 flange nut |
-| [rack_motor_mount](../renders/parts/rack_motor_mount.png) | [rack_motor_mount.stl](../cad/stl/rack_motor_mount.stl) | 1 | PETG | 0.2 | 4 | 40 % | none | upright | top plate bridges 47 mm between the legs (PETG bridge OK) |
-| [rail_frame](../renders/parts/rail_frame.png) | [rail_frame.stl](../cad/stl/rail_frame.stl) | 1 | PETG | 0.2 | 4 | 40 % | none | lying on web outer face | rod holes horizontal Ø8.1 (small top overhang ok); microswitch pocket |
-| [loader_frame](../renders/parts/loader_frame.png) | [loader_frame.stl](../cad/stl/loader_frame.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | upright bottom lip on bed | ledges and tabs have 45 deg under-chamfers; N20 cradle is an open-top trough |
-| [hopper_body](../renders/parts/hopper_body.png) | [hopper_body.stl](../cad/stl/hopper_body.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | upright floor on bed | load plane = floor top = Z_LOAD; slotted gate fixings |
-| [hopper_gate](../renders/parts/hopper_gate.png) | [hopper_gate.stl](../cad/stl/hopper_gate.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | lying on its back face | sets the 0.45 mm throat; +-1.5 mm adjustment in slotted holes; IR emitter pocket |
+| [rack_carriage](../renders/parts/rack_carriage.png) | [rack_carriage.stl](../cad/stl/rack_carriage.stl) | 1 | PETG | 0.2 | 3 | 40 % | none | upright (bores vertical) | 4x LM8UU pressed in; 4x M3 thread-forming into comb pilots; counterbore roofs are small |
+| [rack_nut_arm](../renders/parts/rack_nut_arm.png) | [rack_nut_arm.stl](../cad/stl/rack_nut_arm.stl) | 1 | PETG | 0.2 | 3 | 40 % | none | arm flat on bed flange vertical | T8 flange nut with 4x M3 thread-forming in 2.5 pilots (1.45 mm to the nut bore) |
+| [rack_motor_mount](../renders/parts/rack_motor_mount.png) | [rack_motor_mount.stl](../cad/stl/rack_motor_mount.stl) | 1 | PETG | 0.2 | 4 | 40 % | none | upside down (face plate on bed) | seat is one solid 43 mm bridge (no holes); feet are 45 deg wedges |
+| [rail_frame](../renders/parts/rail_frame.png) | [rail_frame.stl](../cad/stl/rail_frame.stl) | 1 | PETG | 0.2 | 4 | 40 % | none | lying on web outer face | rod bores Ø8.1 horizontal (small roofs); microswitch pocket |
+| [loader_frame](../renders/parts/loader_frame.png) | [loader_frame.stl](../cad/stl/loader_frame.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | upright bottom lip on bed | ledges / IR block / tabs have 45 deg under-chamfers; N20 cradle is an open trough; harness windows bridge 16-18 mm |
+| [hopper_body](../renders/parts/hopper_body.png) | [hopper_body.stl](../cad/stl/hopper_body.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | upright floor on bed | load plane = floor top = Z_LOAD; slotted gate fixings; open U-slot for the pinch shaft |
+| [hopper_gate](../renders/parts/hopper_gate.png) | [hopper_gate.stl](../cad/stl/hopper_gate.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | lying on its front face | sets the 0.45 mm throat; holds the driven pinch rollers + 2 springs + load IR emitter (D-18); roller-cavity roofs bridge 8.6 mm |
 | [hopper_weight](../renders/parts/hopper_weight.png) | [hopper_weight.stl](../cad/stl/hopper_weight.stl) | 1 | PETG 100% infill | 0.2 | 3 | 100 % | none | flat | 2 hex pockets for M8 nuts as ballast |
-| [hopper_lid](../renders/parts/hopper_lid.png) | [hopper_lid.stl](../cad/stl/hopper_lid.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | flat top face on bed | drops into the top cap |
-| [loader_coupler](../renders/parts/loader_coupler.png) | [loader_coupler.stl](../cad/stl/loader_coupler.stl) | 1 | PETG | 0.2 | 3 | 40 % | none | upright | N20 D-shaft to 3 mm shaft; 2x M3 grub screws |
-| [pusher_guide](../renders/parts/pusher_guide.png) | [pusher_guide.stl](../cad/stl/pusher_guide.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | upright (wing bottoms on bed) | roof and blade floor are bridges <= 28 mm |
-| [pusher_slider](../renders/parts/pusher_slider.png) | [pusher_slider.stl](../cad/stl/pusher_slider.stl) | 1 | PETG | 0.15 | 3 | 100 % | none | upside down (flange on bed teeth up) | m1 gear rack; blade fixed with 2x M2 |
-| [pusher_pinion](../renders/parts/pusher_pinion.png) | [pusher_pinion.stl](../cad/stl/pusher_pinion.stl) | 1 | PETG | 0.15 | 3 | 100 % | none | flat | m1 15T involute; pressed on MG90S spline + horn screw |
+| [hopper_lid](../renders/parts/hopper_lid.png) | [hopper_lid.stl](../cad/stl/hopper_lid.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | flat top face on bed | drops into the top cap; through finger slot |
+| [loader_coupler](../renders/parts/loader_coupler.png) | [loader_coupler.stl](../cad/stl/loader_coupler.stl) | 1 | PETG | 0.2 | 3 | 40 % | none | upright | N20 D-shaft to 3 mm shaft; 2x M3 grubs self-tapped |
+| [loader_pulley_feed](../renders/parts/loader_pulley_feed.png) | [loader_pulley_feed.stl](../cad/stl/loader_pulley_feed.stl) | 1 | PETG | 0.15 | 3 | 100 % | none | flat | O-ring pulley Ø12 groove on the feed shaft (D-18); 45 deg V groove |
+| [loader_pulley_pinch](../renders/parts/loader_pulley_pinch.png) | [loader_pulley_pinch.stl](../cad/stl/loader_pulley_pinch.stl) | 1 | PETG | 0.15 | 3 | 100 % | none | flat | O-ring pulley Ø5.8 groove on the pinch shaft (D-18) |
+| [pusher_guide](../renders/parts/pusher_guide.png) | [pusher_guide.stl](../cad/stl/pusher_guide.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | upright (wing bottoms on bed) | blade-channel roof and floor are bridges <= 28 mm |
+| [pusher_slider](../renders/parts/pusher_slider.png) | [pusher_slider.stl](../cad/stl/pusher_slider.stl) | 1 | PETG | 0.15 | 3 | 100 % | none | upside down (flange on bed teeth up) | m1 gear rack (whole teeth only); blade fixed with 2x M2 |
+| [pusher_pinion](../renders/parts/pusher_pinion.png) | [pusher_pinion.stl](../cad/stl/pusher_pinion.stl) | 1 | PETG | 0.15 | 3 | 100 % | none | flat | m1 15T involute; pressed on the MG90S spline + horn screw |
 | [servo_mount](../renders/parts/servo_mount.png) | [servo_mount.stl](../cad/stl/servo_mount.stl) | 1 | PETG | 0.2 | 3 | 40 % | none | lying on its -X face | screws up into the pusher-guide wings |
 | [launcher_frame](../renders/parts/launcher_frame.png) | [launcher_frame.stl](../cad/stl/launcher_frame.stl) | 1 | PETG | 0.2 | 3 | 40 % | none | upside down (top plate on bed) | 45 deg wedge feet; motor cheek holes bridge 20 mm |
-| [launcher_floor](../renders/parts/launcher_floor.png) | [launcher_floor.stl](../cad/stl/launcher_floor.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | upside down (top face on bed) | entry floor top = Z_EJECT; idler pivot lugs; exit IR receiver cup |
-| [idler_arm](../renders/parts/idler_arm.png) | [idler_arm.stl](../cad/stl/idler_arm.stl) | 1 | PETG | 0.2 | 3 | 40 % | none | standing on lever-end face | bell crank; 3 mm axle pressed in |
-| [burn_tray](../renders/parts/burn_tray.png) | [burn_tray.stl](../cad/stl/burn_tray.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | upright | drawer; curved front is a flush patch of the turret shell |
-| [turret_shell](../renders/parts/turret_shell.png) | [turret_shell.stl](../cad/stl/turret_shell.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | upside down (top rim on bed) | front notch prints open-ended; wedge tabs at 45 deg |
+| [launcher_floor](../renders/parts/launcher_floor.png) | [launcher_floor.stl](../cad/stl/launcher_floor.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | upside down (top face on bed) | entry floor top = Z_EJECT; idler pivot lugs; IR receiver cup with 1.5 mm roof; end blocks with full-wall inserts |
+| [idler_arm](../renders/parts/idler_arm.png) | [idler_arm.stl](../cad/stl/idler_arm.stl) | 1 | PETG | 0.2 | 3 | 40 % | none | standing on the lever-end face | bell crank; 3 mm axle pressed in |
+| [slot_panel](../renders/parts/slot_panel.png) | [slot_panel.stl](../cad/stl/slot_panel.stl) | 1 | PETG | 0.2 | 4 | 20 % | none | upright | flush shell patch under the exit slot; 2 inserts; screws through the launcher side plates (D-20) |
+| [turret_shell](../renders/parts/turret_shell.png) | [turret_shell.stl](../cad/stl/turret_shell.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | upside down (top rim on bed) | front notch prints open-ended; tabs are 45 deg wedges resting on the shell anchors |
 | [top_cap](../renders/parts/top_cap.png) | [top_cap.stl](../cad/stl/top_cap.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | upside down (top on bed) | 45 deg chamfer + r4 printable fillet; lid ledge is a 1.5 mm overhang |
 <!-- /PRINT_TABLE -->
 
@@ -160,22 +164,31 @@ views, the exploded view (stack order) and the section view through rack, pusher
 
 **Base (static)**
 
-![base with battery, electronics and turret motor](../renders/base_electronics.png)
+![base with battery, ribbon clock spring and electronics](../renders/base_electronics.png)
 
-*`renders/base_electronics.png`: base shell with the battery, the electronics in the crescents, the pancake NEMA17 with its pulley and the UI bezel.*
+*`renders/base_electronics.png`: base with the deck and bearing hidden: battery, ribbon clock spring
+on its hub, pancake NEMA17 with its pulley, ESP32 and drivers in the crescents, UI bezel.*
 
-1. (`renders/assembly_back_ui.png`) **base_shell**: fit the panel parts into the wall first, while it is easy to reach: DC charge jack
-   (M8 nut), rocker switch, and the **ui_bezel** with the GO and SET buttons, the LED and the OLED.
+1. (`renders/assembly_back_ui.png`, `assembly_base_power.png`) **base_shell**: fit the panel parts into
+   the wall first, while it is easy to reach: DC charge jack (M8 nut) and rocker switch on the back wall,
+   and the **ui_bezel** with the GO and SET buttons, the LED and the OLED at the front.
 2. **Battery**: slide the TalentCell in from below and close it with the **battery_door** (4x M3 CSK
    into the floor inserts). The battery drops out downward for charging away from the machine; the
    charge jack works with it in place.
-3. **Electronics** in the base crescents beside the battery: ESP32, the two TMC2209 on a perfboard,
-   DRV8833, Mini560, divider. **Do not power anything yet** (wiring is section 6). Do the base wiring
-   (section 6, steps 1-8 for the base parts) now, before the deck closes it.
+3. **Electronics** in the base crescents beside the battery (ESP32, both TMC2209 and the UI side in -Y;
+   Mini560, DRV8833 and the pancake NEMA in +Y): the two TMC2209 on a perfboard, DRV8833, Mini560,
+   divider. **Do not power anything yet** (wiring is section 6). Do the base wiring (section 6, steps 1-8
+   for the base parts) now, before the deck closes it; the ribbon follows in step 5.
 4. **base_deck** (inserts done): pancake NEMA17 on its standoffs with the GT2 20T pulley (flange
-   removed, set screw on the shaft flat). **hall_post** pegs into the deck with the A3144 glued in its
-   groove, marked face up. Screw the deck to the base shell.
-5. **Lazy susan** on the deck (M3 into inserts).
+   removed, set screw on the shaft flat). **hall_post** pegs into the deck (r 29.5, clear of the ribbon
+   coil) with the A3144 glued in its groove, marked face up. **spool_hub** pegs into the deck at the centre.
+5. **Clock-spring harness, base end** (DECISIONS D-19, section 6 step 9): prepare the 20-way
+   ribbon (about 400 mm). Lay its inner end along the radial slot in the deck, flat on top of the battery,
+   and down over the notch in the cradle wall into the -Y crescent to the ESP32 / driver board. Wind
+   **3 loose turns** around the spool_hub; 3 turns allow the full 0-360 degree turret range in either
+   winding direction. Screw the deck to
+   the base shell without pinching the ribbon.
+6. **Lazy susan** on the deck (M3 into inserts). The ribbon coil sits inside its ID.
 
 **Turret**
 
@@ -183,49 +196,71 @@ views, the exploded view (stack order) and the section view through rack, pusher
 
 *`renders/exploded.png`: stack order from the base (bottom) to the top cap.*
 
-6. **turntable**: glue the GT2 belt teeth-out around the ring hub (section 4) and the magnet into its
-   pocket. Screw the turntable to the lazy susan's upper race (M3x8 CSK). The belt ring must mesh with
-   the pulley with almost no backlash: the motor standoffs have slots, push the motor in until there
-   is no play, back off a hair, tighten. Turn the turret by hand through 360 degrees: no tight spots.
-7. **Rack**: glue (CA) the **rack_bottom_plate** and **rack_top_plate** into the rebates of the two
+7. **turntable**: glue the GT2 belt teeth-out around the ring hub (section 4) and the magnet into its
+   pocket. Pass the **outer end of the ribbon** up through the 16 mm hole in the turntable (at the loader
+   side), then screw the turntable to the lazy susan's upper race (M3x8 CSK). The belt ring must mesh
+   with the pulley with almost no backlash: the motor standoffs have slots, push the motor in until
+   there is no play, back off a hair, tighten. Turn the turret by hand through 360 degrees in both
+   directions: no tight spots, and the ribbon coil winds and unwinds without catching.
+8. **shell_anchor** x4 on the turntable rim (M3 CSK from below into each anchor) (`renders/harness_route.png`).
+9. **Rack**: glue (CA) the **rack_bottom_plate** and **rack_top_plate** into the rebates of the two
    **rack_comb**s (identical, one turned 180 degrees). Check a card slides into every slot. Screw the
-   combs to the **rack_carriage** (4x M3 thread-forming) with the 4 LM8UU pressed in. Bolt the brass T8
-   flange nut to the **rack_nut_arm** (4 inserts) and the arm to the carriage.
-8. (`renders/assembly_open_iso.png`, `assembly_open_back.png`) **Rack drive and rails**. The rack
-   NEMA17-T8 sits **at the bottom**, standing face-up on the turntable beside the rack, with the
-   leadscrew pointing up (DECISIONS D-10): screw the **rack_motor_mount** plate to the motor face
-   (4x M3), set the motor into the mount's seat and fix the mount's feet to the turntable (4x M3 CSK
-   from below). **rail_frame** with the two 157 mm rods and the **microswitch** in its pocket goes on the
-   turntable. Slide the rack onto the rods and lower it so the leadscrew threads into the brass nut on
-   the nut arm. With the motor unpowered, the rack must run the full travel (81 mm) when you turn the
-   screw by hand, and the microswitch must click when the rack reaches its bottom stop.
-9. (`renders/section_rack_pusher_launcher.png`, `section_detail_stations.png`) **Pusher**: **servo_mount** with the MG90S, screwed up into the **pusher_guide** wings. Centre the
-   servo at 90 degrees (`servo 90` later, or a servo tester) before pressing the **pusher_pinion** onto
-   the spline (+ horn screw). Fix the steel blade to the **pusher_slider** (2x M2) and slide it into
-   the guide, teeth meshing the pinion. The blade must slide freely and pass between two fins.
-10. (`renders/assembly_open_top.png`, `section_rack_top.png`) **Loader**: N20 in the **loader_frame** cradle, **loader_coupler** (2x M3 grub) to the 98.5 mm feed
-    shaft with the two 14 mm feed rollers. **hopper_body** on top, **hopper_gate** set to the 0.45 mm
-    throat (one card passes, two do not: use a 0.45 mm feeler, slotted holes give +/-1.5 mm),
-    loader IR emitter in the gate pocket and receiver opposite. **hopper_weight** with 2 M8 nuts, and the
-    **hopper_lid**.
-11. (`renders/section_rack_pusher_launcher.png`) **Launcher**: 130 motor with the 24 mm drive wheel in the **launcher_frame**, **launcher_floor**
-    (entry floor at the eject station height) with the **idler_arm** on its pivot pins, the 12 mm
-    pinch idler on its axle and the 5x10 spring for preload. Exit IR receiver in the floor's cup,
-    emitter opposite. Slide the **burn_tray** drawer in under the exit.
-12. **Cable service loop**: all turret wires (rack stepper, servo, N20, 130, both IR pairs,
-    microswitch) go down through the lazy susan centre hole. Leave a loop long enough for one full
-    turn (0-360 degrees); the firmware never turns further. Tie it to the turntable on one side and to
-    the deck on the other.
-13. **turret_shell** and **top_cap** (`renders/assembly_front_exterior.png`, `assembly_back_ui.png`, `assembly_top_closed.png`). The cap lifts off for jam clearing; the only opening is the card
-    exit slot. The burn tray front is a flush patch of the shell.
+   combs to the **rack_carriage** (4x M3 thread-forming) with the 4 LM8UU pressed in. Fix the brass T8
+   flange nut to the **rack_nut_arm** with 4x M3 thread-forming screws into the 2.5 mm pilots, and the
+   arm to the carriage.
+10. (`renders/assembly_open_iso.png`, `assembly_open_back.png`, `harness_route.png`) **Rack drive and
+    rails**. The rack NEMA17-T8 sits **at the bottom**, standing face-up on the turntable beside the
+    rack, with the leadscrew pointing up (DECISIONS D-10): screw the **rack_motor_mount** plate to the
+    motor face (4x M3), set the motor into the mount's seat and fix the mount's feet to the turntable
+    (M3 CSK from below). **rail_frame** with the two 157 mm rods and the **microswitch** in its pocket
+    goes on the turntable. Slide the rack onto the rods and lower it so the leadscrew threads into the
+    brass nut on the nut arm. With the motor unpowered, the rack must run the full travel (81 mm) when
+    you turn the screw by hand, and the microswitch must click when the rack reaches its bottom stop.
+11. (`renders/section_rack_pusher_launcher.png`, `section_detail_stations.png`) **Pusher**:
+    **servo_mount** with the MG90S, screwed up into the **pusher_guide** wings. Centre the servo at
+    90 degrees (a servo tester, or `servo 90` on the console after the first homing) before pressing the **pusher_pinion** onto the
+    spline (+ horn screw). Fix the steel blade to the **pusher_slider** (2x M2) and slide it into the
+    guide, teeth meshing the pinion. The blade must slide freely and pass between two fins.
+12. (`renders/assembly_open_top.png`, `section_detail_stations.png`) **Loader** (DECISIONS D-18):
+    N20 in the **loader_frame** cradle, **loader_coupler** (2x M3 grub) to the 106 mm feed shaft with the
+    two 14 mm feed rollers and the **loader_pulley_feed**. In the **hopper_gate**: the 84.5 mm pinch shaft
+    with the two 7 mm pinch rollers and the **loader_pulley_pinch**, floating in its vertical slots and held
+    down by the two 0.4 mm-wire springs; the loader IR emitter in its pocket. Fit the O-ring belt over
+    both pulleys (-X side). Mount **hopper_body** and the gate, set the gate to the 0.45 mm throat (one
+    card passes, two do not: use a 0.45 mm feeler, slotted holes give +/-1.5 mm), receiver opposite the
+    emitter. **hopper_weight** with 2 M8 nuts, and the **hopper_lid**. Turning the feed shaft by hand must
+    turn the pinch rollers too.
+13. (`renders/section_rack_pusher_launcher.png`) **Launcher**: 130 motor with the 24 mm drive wheel in
+    the **launcher_frame**, **launcher_floor** (entry floor at the eject station height) with the
+    **idler_arm** on its pivot pins, the 12 mm pinch idler on its axle and the 0.6 mm-wire spring for
+    preload. Exit IR receiver in the floor's cup, emitter opposite. Screw the **slot_panel** through the
+    launcher side plates (2x M3 into its inserts): it closes the shell under the exit slot.
+14. **Turret harness, turret end**: the ribbon's outer end comes up inside the loader_frame box. Split it
+    as listed in section 6 and route the branches through the box's two wall windows: -X to the rack
+    NEMA, +X along the rail frame to the microswitch, then forward between the rail frame and the shell
+    to the launcher. Loader, pusher and load-IR wires stay inside the box. Leave a little slack at every
+    moving part (the rack moves 81 mm; the rack stepper and the microswitch do not move with it).
+15. **turret_shell** onto the shell anchors: its tabs rest on the anchors and are screwed **from above**
+    (4x M3x16, top cap off). Then the **top_cap** (`renders/assembly_front_exterior.png`,
+    `assembly_back_ui.png`, `assembly_top_closed.png`). The cap lifts off for jam clearing and the hopper
+    lid; with the cap off, the 4 screws release the shell for full access. The only opening is the card
+    exit slot.
 
 ![turret open](../renders/assembly_open_iso.png)
 
-*`renders/assembly_open_iso.png`: the turret with the shell removed: rack + rail frame, hopper/loader, pusher and launcher.*
+*`renders/assembly_open_iso.png`: the turret with the shell removed: rack + rail frame, hopper/loader,
+pusher and launcher, and the loader-frame harness window.*
+
+![harness route and shell anchors](../renders/harness_route.png)
+
+*`renders/harness_route.png`: turret side of the harness route, the rack motor at the bottom and the
+purple shell anchors on the turntable rim.*
 
 ![section through rack, pusher and launcher](../renders/section_rack_pusher_launcher.png)
 
-*`renders/section_rack_pusher_launcher.png`: card path from the pusher (left) through the eject shelf into the launcher nip (right); `section_detail_stations.png` zooms in on the hopper throat, the rack shelves and the launcher nip.*
+*`renders/section_rack_pusher_launcher.png`: card path from the pusher (left) through the eject shelf
+into the launcher nip (right); `section_detail_stations.png` zooms in on the hopper throat with the pinch
+rollers, the rack shelves and the launcher nip.*
 
 Check the build against the exploded view: every part in it must be in your machine, and nothing
 may rub when the turret turns by hand.
@@ -241,25 +276,49 @@ zooms better). The pin table is in [electronics/PINS.md](../electronics/PINS.md)
    distribution (Wago or soldered bus) and battery minus -> GND. Charge jack -> battery charge input plug.
    Switch on, measure ~11-12.6 V on the 12 V bus.
 2. **Mini560**: connect its input, switch on, measure **5.0 V** on its output before connecting any load.
-3. **5 V bus**: ESP32 VIN, servo, DRV8833 VM, IR emitters, A3144. **DRV8833 VM goes on 5 V, never
+3. **5 V bus**: ESP32 VIN, servo, DRV8833 VM, IR emitters and receivers, A3144. **DRV8833 VM goes on 5 V, never
    12 V** (its maximum is 10.8 V).
 4. **TMC2209 drivers**: 100 uF / 25 V capacitor across VM and GND right at each driver (observe
    polarity). VM = 12 V, VIO = ESP32 3V3. **Turret driver: MS1 and MS2 to 3V3 (16 microsteps).
-   Rack driver: MS1 and MS2 to GND (8 microsteps).** EN of both drivers to GPIO13. Never connect
+   Rack driver: MS1 and MS2 to GND (8 microsteps).** EN of both drivers to GPIO13, with a **10 k pull-up from EN to 3V3** (keeps the drivers off while
+   the ESP32 resets or is being flashed, when GPIO13 floats). Never connect
    or disconnect a motor while VM is powered: it destroys the driver.
 5. **Stepper coils**: find the pairs with a multimeter (a pair has a few ohms between its wires).
    Pair 1 -> A1/A2, pair 2 -> B1/B2. If a motor turns the wrong way later, flip
    `TURN_DIR_INVERT` / `RACK_DIR_INVERT` in config.h (or swap the two wires of one pair).
 6. **DRV8833**: AIN1/AIN2 = GPIO32/33 (loader N20 on AOUT1/2), BIN1 = GPIO19 (launcher on BOUT1/2),
    **BIN2 to GND**, nSLEEP to 5 V. Solder a 100 nF ceramic capacitor across each DC motor's terminals.
-7. **Sensors and UI**: IR receivers (3V3, GND, OUT to GPIO15 loader / GPIO4 launcher), A3144 (5 V,
+7. **Sensors and UI**: IR receivers (5 V, GND, OUT to GPIO15 loader / GPIO4 launcher), A3144 (5 V,
    GND, OUT to GPIO16 with a 10 k pull-up to 3V3), microswitch (COM to GND, NO to GPIO17), GO
    (GPIO18) and SET (GPIO5) buttons to GND, LED anode through 330 ohm from GPIO2, cathode to GND,
    OLED (3V3, GND, SDA GPIO21, SCL GPIO22).
 8. **Battery sense divider**: 100 k from the switched 12 V bus to the mid point, 22 k from the mid point
    to GND, 100 nF from the mid point to GND, mid point to GPIO34. Check with a meter: the mid point is
    ~0.18 x battery voltage (2.0-2.3 V). **Never more than 3.3 V.**
-9. Run `python3 tools/check_pins.py`: it confirms the firmware, the pin table and the diagram agree.
+9. **Turret harness (ribbon clock spring, D-19)**: every wire between the base and the turret is a
+    conductor of the 20-way 1.27 mm ribbon (AWG28, about 1 A per conductor). Allocation (conductor 1 =
+    red-striped edge):
+
+    | Conductors | Signal | Base end | Turret end |
+    |---|---|---|---|
+    | 1-2 | rack coil A1 (2 in parallel) | TMC2209 rack A1 | rack NEMA A+ |
+    | 3-4 | rack coil A2 | TMC2209 rack A2 | rack NEMA A- |
+    | 5-6 | rack coil B1 | TMC2209 rack B1 | rack NEMA B+ |
+    | 7-8 | rack coil B2 | TMC2209 rack B2 | rack NEMA B- |
+    | 9-10 | launcher M+ (2 in parallel) | DRV8833 BOUT1 | 130 motor + |
+    | 11-12 | launcher M- | DRV8833 BOUT2 | 130 motor - |
+    | 13 | loader M+ | DRV8833 AOUT1 | N20 + |
+    | 14 | loader M- | DRV8833 AOUT2 | N20 - |
+    | 15 | +5 V | 5 V bus | servo V+, both IR emitters and receivers VCC |
+    | 16 | GND | GND | servo GND, IR GND (4), microswitch COM |
+    | 17 | PUSHER | GPIO23 | servo signal |
+    | 18 | IR_LOAD | GPIO15 | loader IR receiver OUT |
+    | 19 | IR_EXIT | GPIO4 | launcher IR receiver OUT |
+    | 20 | HOME_RACK | GPIO17 | microswitch NO |
+
+    Solder or crimp (IDC) at both ends, keep the ribbon flat in the coil, and do not twist it. The pancake
+    turret NEMA and the hall sensor are in the base and do not use the ribbon.
+10. Run `python3 tools/check_pins.py`: it confirms the firmware, the pin table and the diagram agree.
 
 Power budget: peak < 3 A at 12 V, about 14 h (realistically 7 h) of play per charge.
 See [POWER.md](../electronics/POWER.md).
@@ -274,12 +333,17 @@ See [POWER.md](../electronics/POWER.md).
    pio run -e esp32dev -t upload       # flash over USB
    pio device monitor -b 115200        # serial log
    ```
-2. For the very first flash, **leave the main switch off** (ESP32 on USB only). The firmware sees no
-   battery on GPIO34 (below `VBAT_ABSENT`) and does not drive the motors. Check the serial log for the
-   boot banner, the OLED status screen, and type `sensors` to see GO/SET register.
-3. Set the TMC2209 VREF (section 8.1) **before** the first run with the battery.
-4. Switch on. The machine homes the rack (down to the microswitch) and the turret (to the hall
-   sensor) and parks. Keep a hand on the switch for the first homing.
+2. For the very first flash, **leave the main switch off** (ESP32 on USB only). At boot the firmware
+   first drives EN (GPIO13) high, then reads the battery. Below `VBAT_ABSENT` (3 V) it does **not** home
+   or move anything: the serial log shows `Battery 0.xx V: not homing.` and
+   `FAULT: NO BATTERY (USB)`, the OLED shows `NO BATTERY (USB)` / `Fix, then press GO`, and the LED
+   blinks fast. Between 3 V and 10.5 V the same happens with `BATTERY LOW-CHARGE`. In this wait state the
+   serial console is not available. Details: [FIRMWARE.md](FIRMWARE.md), "Boot without a battery (USB only)".
+3. **Set the TMC2209 VREF (section 8.1) in service mode before the first homing.**
+4. Reset without holding anything, switch the battery on and press **GO**. Switching on alone does not
+   start anything: GO re-reads the battery and, at 10.5 V or more, homes the rack (down to the
+   microswitch), then the turret (to the hall sensor), parks at 0 degrees and powers the motors down.
+   Keep a hand on the switch for the first homing.
 
 If upload fails: hold the BOOT button on the DevKit while it says "Connecting...". If it still fails,
 disconnect the LED wire on GPIO2 (strapping pin) and try again.
@@ -312,9 +376,27 @@ procedure are in [FIRMWARE.md](FIRMWARE.md) ("Serial console", "Calibration cons
 ### 8.1 TMC2209 current (VREF)
 
 Target 0.8 A RMS for both motors. For modules with 0.11 ohm sense resistors:
-`I_RMS = VREF x 0.707`, so **VREF = 1.13 V**. Power the drivers with VM and VIO, measure between the
-pot (or the VREF pad) and GND, turn the pot with a ceramic screwdriver. A motor that is hot to touch
-(> 60 C) after 10 minutes needs less current; skipped steps need more (max 1.0 A for the pancake motor).
+`I_RMS = VREF x 0.707`, so **VREF = 1.13 V**. Measure between the pot (or the VREF pad) and GND
+and turn the pot with a ceramic screwdriver. VREF only needs VIO and VM present; the outputs do not
+have to be enabled.
+
+**Safe procedure (service / no-motion mode)**, so nothing moves at an unknown current:
+
+1. Hold **GO** while you switch the battery on (or while you press the ESP32 EN/RST button with the
+   battery already on). Release when the LED comes on.
+2. The firmware is now in service mode: EN stays high (TMC2209 outputs off), no homing, servo never
+   attached. Serial: `SERVICE MODE: no motion, steppers disabled (EN high), ...`. OLED:
+   `SERVICE / NO MOTION`, `Set TMC2209 VREF now`. The LED is on with a short gap every 2 s.
+   `help`, `status`, `vbat`, `sensors` and `clear` work on the console; every motion command answers
+   `service mode: no motion (reset to exit)`.
+3. Set VREF on both drivers to 1.13 V. The motors may stay connected: the outputs are off.
+4. Reset or power-cycle **without** holding GO to leave service mode.
+
+Alternative without the firmware: switch VM off, unplug both motor connectors, switch on, set VREF,
+switch **off**, plug the motors back in. Never plug or unplug a motor with VM on.
+
+A motor that is hot to touch (> 60 C) after 10 minutes needs less current; skipped steps need more
+(max 1.0 A for the pancake motor, VREF 1.41 V).
 
 ### 8.2 Battery reading
 
@@ -374,8 +456,10 @@ and real cards with `deal seat <n>`, `deal board <k>` and `deal burn`.
   Lower it if cards fly off the table.
 * `LAUNCH_BOARD` (default 110): the 5 board cards land in a row next to the machine, fanned by
   `BOARD_SPREAD_DEG` (4 degrees).
-* `LAUNCH_BURN` (default 55): the card just drops into the burn tray under the exit. Too low and
-  it stalls in the nip (launcher jam); too high and it jumps out of the tray.
+* `LAUNCH_BURN` (default 55): burns are launched very slowly, face down, onto the **burn spot** on
+  the table right next to the machine at `BURN_DEG` = 22 degrees (between the board fan and seat 0,
+  DECISIONS D-20). The card should just clear the base and land within a few cm of it. Too low and it
+  stalls in the nip (launcher jam); too high and it slides into the board or seat 0.
 * `SPINUP_MS` (default 250): wait after a speed change. Increase it if the first card of a street is short.
 
 A lower battery voltage gives a shorter throw; calibrate at about 11.5 V.
@@ -388,18 +472,21 @@ point exactly along the turret's +Y mark. `turret 0` and check; correct a magnet
 Angles are computed, not tabled:
 
 * seat *s* of *n* (numbered clockwise, 0 = first seat after the board): `BOARD_DEG + (s + 0.5) x 360 / n`
-* board slot *k* = 0..4: `BOARD_DEG + (k - 2) x BOARD_SPREAD_DEG`; burns go to `BOARD_DEG` at burn speed
-* `BOARD_DEG = 8` and `BOARD_SPREAD_DEG = 4` are geometry (params.scad): the board fan spans 0-16 degrees
-  so it never wraps past the 0/360 cable limit.
+* board slot *k* = 0..4: `BOARD_DEG + (k - 2) x BOARD_SPREAD_DEG`; burns go to `BURN_DEG` = 22 degrees at burn speed (D-20)
+* `BOARD_DEG = 8`, `BOARD_SPREAD_DEG = 4` and `BURN_DEG = 22` are geometry (params.scad): the board fan
+  spans 0-16 degrees so it never wraps past the 0/360 cable limit, and the burn spot sits between the fan
+  and seat 0 (at least 26 degrees).
 
-Place the machine so that the board direction points at the free table spot for the board and the
-seats fall in front of the players; check with `seat <n>` / `board <k>`. Rotate the machine instead of
+Place the machine so that the board direction points at the free table spot for the board (with room
+for the burn pile beside it) and the seats fall in front of the players; check with `seat <n>` / `board <k>`. Rotate the machine instead of
 changing `BOARD_DEG`. Turret resolution is 88.9 microsteps per degree (10:1 ring).
 
 ### 8.9 Full test
 
 Load a full deck, check the count is 52, deal a 6-player hand step by step (GO): 12 hole cards
-clockwise from the left of the button, burn + flop, burn + turn, burn + river. Then 10 hands in a row
+clockwise from the left of the button, burn + flop, burn + turn, burn + river. The 3 burns form a face-down
+pile on the burn spot next to the board. At the end of the hand collect the burn pile together with the
+board and the players' cards and put all 52 back in the hopper. Then 10 hands in a row
 without a fault before you call it done.
 
 ## 9. Troubleshooting and jam clearing
@@ -434,20 +521,22 @@ dealing it is safest to collect all cards and start a new hand (misdeal: SET lon
 <!-- RENDER_INDEX: renders/ as of the final export -->
 | Render | Shows |
 |---|---|
-| [assembly_front_exterior.png](../renders/assembly_front_exterior.png) | finished machine, front: card exit slot and burn drawer |
+| [assembly_front_exterior.png](../renders/assembly_front_exterior.png) | finished machine, exit-slot side (card exit slot, slot panel) |
 | [assembly_back_ui.png](../renders/assembly_back_ui.png) | finished machine, UI side: OLED, GO, SET, LED bezel on the base |
+| [assembly_base_power.png](../renders/assembly_base_power.png) | base back wall: rocker switch and DC charge jack |
 | [assembly_top_closed.png](../renders/assembly_top_closed.png) | closed, from above: top cap and hopper loading lid |
-| [assembly_open_iso.png](../renders/assembly_open_iso.png) | shell and cap removed: turret mechanisms |
+| [assembly_open_iso.png](../renders/assembly_open_iso.png) | shell and cap removed: turret mechanisms, loader-frame harness window |
 | [assembly_open_back.png](../renders/assembly_open_back.png) | shell removed, from the back (hopper side) |
 | [assembly_open_top.png](../renders/assembly_open_top.png) | shell removed, top view, rack at the top of its travel |
+| [harness_route.png](../renders/harness_route.png) | turret harness route and shell anchors on the turntable (D-19) |
 | [exploded.png](../renders/exploded.png) | exploded view, assembly order |
 | [section_rack_pusher_launcher.png](../renders/section_rack_pusher_launcher.png) | section at X=0 through rack, pusher and launcher (card path), rack at 30 mm |
-| [section_detail_stations.png](../renders/section_detail_stations.png) | close-up: hopper throat, rack shelves and launcher nip |
+| [section_detail_stations.png](../renders/section_detail_stations.png) | close-up: hopper throat with the pinch rollers, rack shelves and launcher nip |
 | [section_rack_top.png](../renders/section_rack_top.png) | same section with the rack at the top of its travel (81 mm) |
-| [base_electronics.png](../renders/base_electronics.png) | base with deck and bearing hidden: battery, pancake NEMA17, ESP32, drivers, UI |
+| [base_electronics.png](../renders/base_electronics.png) | base with deck and bearing hidden: battery, ribbon clock spring and hub, pancake NEMA17, ESP32, drivers, UI |
 | [turret_rotation.gif](../renders/turret_rotation.gif) | animation: turret rotation 0-360 degrees |
 
 Printed parts, one render each (same names as the STLs):
 
-[base_deck](../renders/parts/base_deck.png) [base_shell](../renders/parts/base_shell.png) [battery_door](../renders/parts/battery_door.png) [burn_tray](../renders/parts/burn_tray.png) [hall_post](../renders/parts/hall_post.png) [hopper_body](../renders/parts/hopper_body.png) [hopper_gate](../renders/parts/hopper_gate.png) [hopper_lid](../renders/parts/hopper_lid.png) [hopper_weight](../renders/parts/hopper_weight.png) [idler_arm](../renders/parts/idler_arm.png) [launcher_floor](../renders/parts/launcher_floor.png) [launcher_frame](../renders/parts/launcher_frame.png) [loader_coupler](../renders/parts/loader_coupler.png) [loader_frame](../renders/parts/loader_frame.png) [pusher_guide](../renders/parts/pusher_guide.png) [pusher_pinion](../renders/parts/pusher_pinion.png) [pusher_slider](../renders/parts/pusher_slider.png) [rack_bottom_plate](../renders/parts/rack_bottom_plate.png) [rack_carriage](../renders/parts/rack_carriage.png) [rack_comb](../renders/parts/rack_comb.png) [rack_motor_mount](../renders/parts/rack_motor_mount.png) [rack_nut_arm](../renders/parts/rack_nut_arm.png) [rack_top_plate](../renders/parts/rack_top_plate.png) [rail_frame](../renders/parts/rail_frame.png) [servo_mount](../renders/parts/servo_mount.png) [top_cap](../renders/parts/top_cap.png) [turntable](../renders/parts/turntable.png) [turret_shell](../renders/parts/turret_shell.png) [ui_bezel](../renders/parts/ui_bezel.png)
+[base_shell](../renders/parts/base_shell.png) [battery_door](../renders/parts/battery_door.png) [base_deck](../renders/parts/base_deck.png) [hall_post](../renders/parts/hall_post.png) [spool_hub](../renders/parts/spool_hub.png) [ui_bezel](../renders/parts/ui_bezel.png) [turntable](../renders/parts/turntable.png) [shell_anchor](../renders/parts/shell_anchor.png) [rack_comb](../renders/parts/rack_comb.png) [rack_bottom_plate](../renders/parts/rack_bottom_plate.png) [rack_top_plate](../renders/parts/rack_top_plate.png) [rack_carriage](../renders/parts/rack_carriage.png) [rack_nut_arm](../renders/parts/rack_nut_arm.png) [rack_motor_mount](../renders/parts/rack_motor_mount.png) [rail_frame](../renders/parts/rail_frame.png) [loader_frame](../renders/parts/loader_frame.png) [hopper_body](../renders/parts/hopper_body.png) [hopper_gate](../renders/parts/hopper_gate.png) [hopper_weight](../renders/parts/hopper_weight.png) [hopper_lid](../renders/parts/hopper_lid.png) [loader_coupler](../renders/parts/loader_coupler.png) [loader_pulley_feed](../renders/parts/loader_pulley_feed.png) [loader_pulley_pinch](../renders/parts/loader_pulley_pinch.png) [pusher_guide](../renders/parts/pusher_guide.png) [pusher_slider](../renders/parts/pusher_slider.png) [pusher_pinion](../renders/parts/pusher_pinion.png) [servo_mount](../renders/parts/servo_mount.png) [launcher_frame](../renders/parts/launcher_frame.png) [launcher_floor](../renders/parts/launcher_floor.png) [idler_arm](../renders/parts/idler_arm.png) [slot_panel](../renders/parts/slot_panel.png) [turret_shell](../renders/parts/turret_shell.png) [top_cap](../renders/parts/top_cap.png)
 <!-- /RENDER_INDEX -->

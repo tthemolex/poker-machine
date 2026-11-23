@@ -5,7 +5,7 @@ mirrored in [pins.csv](pins.csv) and in the ESP32 connector of [wiring.yml](wiri
 `python3 tools/check_pins.py` asserts that config.h, pins.csv, wiring.yml and this table all agree.
 
 Board: ESP32 DevKit V1 (WROOM-32, 30-pin). All logic is 3.3 V. Never feed 5 V into a GPIO
-(the A3144 runs at 5 V but its output is open-collector and only pulled up to 3.3 V).
+(the A3144 and the IR receivers run at 5 V, but their outputs are open-collector and only pulled up to 3.3 V).
 
 | Signal (PIN_...) | GPIO | Dir | Connects to | Notes |
 |---|---|---|---|---|
@@ -13,7 +13,7 @@ Board: ESP32 DevKit V1 (WROOM-32, 30-pin). All logic is 3.3 V. Never feed 5 V in
 | TURN_DIR | 26 | out | TMC2209 turret DIR | swap one coil pair if the direction is wrong |
 | RACK_STEP | 27 | out | TMC2209 rack STEP | 8 usteps (MS1=MS2=GND) |
 | RACK_DIR | 14 | out | TMC2209 rack DIR | |
-| STEP_EN | 13 | out | EN of both TMC2209 | active LOW; HIGH = motors off when idle |
+| STEP_EN | 13 | out | EN of both TMC2209 | active LOW; HIGH = motors off when idle; **10k pull-up to 3V3** (GPIO13 floats during reset/flash) |
 | FEED_IN1 | 32 | out | DRV8833 AIN1 | loader N20 PWM |
 | FEED_IN2 | 33 | out | DRV8833 AIN2 | loader N20 direction (LOW = feed) |
 | LAUNCH | 19 | out | DRV8833 BIN1 (IN3) | launcher 130 motor PWM, BIN2 (IN4) tied to GND |
@@ -44,7 +44,7 @@ Board: ESP32 DevKit V1 (WROOM-32, 30-pin). All logic is 3.3 V. Never feed 5 V in
 |---|---|
 | VIN | 5 V rail (Mini560 OUT+) |
 | GND | common ground |
-| 3V3 | 3.3 V logic bus: IR receivers, OLED, TMC2209 VIO, MS1/MS2 of the turret driver |
+| 3V3 | 3.3 V logic bus: OLED, TMC2209 VIO, MS1/MS2 of the turret driver, 10k pull-ups (EN, hall) |
 
 Other fixed wiring: TMC2209 VM = switched 12 V with 100 uF at each driver. DRV8833 VM = 5 V
 (not 12 V: its absolute max is 10.8 V), nSLEEP to 5 V, BIN2 to GND. Divider top = switched 12 V.

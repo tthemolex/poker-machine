@@ -14,8 +14,8 @@ Power tree: [power.svg](power.svg) / [power.png](power.png). Wiring: [wiring.svg
 | Charging | TalentCell 12.6 V charger into the panel DC jack (5.5x2.1) on the base wall, wired to the battery DC input. The machine can stay switched off while charging. |
 | Main switch | Rocker switch in series with battery + (12 V output). Everything, including the battery divider, is downstream of it, so the off-state draw is zero. |
 | 12 V rail | TMC2209 VM x2 (100 uF / 25 V electrolytic at each driver), Mini560 input, VBAT divider |
-| 5 V rail | Mini560 (3 A): ESP32 VIN, MG90S, DRV8833 VM (max 10.8 V, so it must be on 5 V), N20, 130 motor, IR emitters, A3144 |
-| 3.3 V | ESP32 on-board LDO, logic only: IR receivers, OLED, TMC2209 VIO |
+| 5 V rail | Mini560 (3 A): ESP32 VIN, MG90S, DRV8833 VM (max 10.8 V, so it must be on 5 V), N20, 130 motor, IR emitters + receivers, A3144 |
+| 3.3 V | ESP32 on-board LDO, logic only: OLED, TMC2209 VIO (the GPIO pull-ups also go to 3.3 V) |
 
 ## Loads
 
@@ -34,8 +34,8 @@ is 90 % under load and 80 % at light load.
 | MG90S pusher servo | 5 V | 0.006 | 0.250 | 0.700 | 0.324 | ~0.4 s per dealt card; detached when idle |
 | N20 loader motor (DRV8833 ch A) | 5 V | 0.000 | 0.120 | 0.600 | 0.278 | loading only (~0.5 s per card) |
 | 130 launcher motor (DRV8833 ch B) | 5 V | 0.000 | 0.500 | 1.500 | 0.694 | dealing only; 1.5 A = start-up surge |
-| IR emitters x2 + A3144 hall | 5 V | 0.044 | 0.044 | 0.044 | 0.020 | always |
-| 3V3 loads: OLED, IR receivers x2, TMC VIO x2 | 5 V | 0.019 | 0.025 | 0.030 | 0.014 | always (via ESP32 LDO) |
+| IR break-beams x2 (emitter + receiver) + A3144 hall | 5 V | 0.044 | 0.044 | 0.044 | 0.020 | always |
+| 3V3 loads: OLED, TMC VIO x2 | 5 V | 0.019 | 0.025 | 0.030 | 0.014 | always (via ESP32 LDO) |
 
 "Peak @12 V" for a 5 V load = I5 x 5 V / 0.90 / 12 V.
 
@@ -65,7 +65,7 @@ Notes:
 
 Idle = steppers disabled (EN high), servo detached, DC motors off, OLED on.
 12 V: 2 x 5 mA TMC2209 quiescent + 0.1 mA divider = 10 mA.
-5 V: ESP32 50 mA + servo (detached) 6 mA + IR emitters/hall 44 mA + 3V3 loads 19 mA = 119 mA,
+5 V: ESP32 50 mA + servo (detached) 6 mA + IR beams/hall 44 mA + 3V3 loads 19 mA = 119 mA,
 through the buck at 80 %: 0.74 W.
 **Idle total = 0.86 W = 72 mA at 12 V.** The IR emitters are the largest avoidable idle load:
 44 mA x 5 V / 0.8 = 0.275 W (32 %). Switching them off with a GPIO in a later revision would cut idle to

@@ -21,7 +21,8 @@ class Machine {
   dealer::Fault loadCards();
   // Execute a plan: one random occupied shelf per action.
   dealer::Fault executePlan(const dealer::Plan& plan);
-  // Push one specific shelf into the burn tray (double-feed recovery, purge).
+  // Throw one specific shelf onto the burn spot (double-feed recovery), with the
+  // LAUNCH_PURGE profile (two stacked cards need more than LAUNCH_BURN).
   dealer::Fault purgeShelf(int shelf);
   // Purge every shelf the map marks occupied. Shelves found empty are just cleared.
   dealer::Fault purgeAll();
@@ -51,7 +52,8 @@ class Machine {
  private:
   dealer::Fault fail(dealer::Fault f);
   dealer::Fault ejectShelf(int shelf, float deg, uint8_t pwm, bool emptyIsFault);
-  bool homeTurret(uint32_t timeoutMs);
+  bool homeTurret();
+  dealer::Fault probeExtraCard();
   bool homeRack();
   void aimAt(float deg);
   void runBoth();
@@ -63,7 +65,8 @@ class Machine {
   dealer::Rack rack_;
   bool powered_ = false;
   bool turretHomed_ = false;  // position counter trusted
-  bool turretParked_ = false; // left at 0 deg by powerDown(): short re-home
+  bool turretParked_ = true;  // at 0 deg (powerDown parks there; assumed at boot)
+  bool turretCounterValid_ = false;  // step counter usable as a homing estimate
   bool rackHomed_ = false;
   uint8_t launchNow_ = 0;
   int lastLoaded_ = -1;

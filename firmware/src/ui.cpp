@@ -81,6 +81,30 @@ bool oledPresent() { return oledOk; }
 dealer::Press pollGo() { return goBtn.update(digitalRead(PIN_BTN_GO) == LOW, millis()); }
 dealer::Press pollSet() { return setBtn.update(digitalRead(PIN_BTN_SET) == LOW, millis()); }
 bool setHeldRaw() { return digitalRead(PIN_BTN_SET) == LOW; }
+bool goHeldRaw() { return digitalRead(PIN_BTN_GO) == LOW; }
+
+void drawService(float vbat, int cards) {
+#if HAS_OLED
+  if (!oledOk) return;
+  const uint32_t now = millis();
+  if (now - lastDraw < cfg::OLED_REFRESH_MS) return;
+  lastDraw = now;
+  oled.clearDisplay();
+  oled.setCursor(0, 0);
+  oled.println("SERVICE / NO MOTION");
+  oled.println("Motors off (EN high)");
+  oled.printf("Batt: %5.2fV\n", static_cast<double>(vbat));
+  oled.printf("Rack: %d/%d\n", cards, static_cast<int>(geom::SHELF_COUNT));
+  oled.println("Set TMC2209 VREF now");
+  oled.println("Serial console: help");
+  oled.setCursor(0, 56);
+  oled.print("Reset to exit");
+  oled.display();
+#else
+  (void)vbat;
+  (void)cards;
+#endif
+}
 
 void setPattern(LedPattern p) {
   if (p == pattern) return;

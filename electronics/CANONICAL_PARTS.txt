@@ -14,7 +14,7 @@ mg90s_servo           1   pusher servo
 n20_motor             1   loader feed roller motor, N20 6V ~300 rpm
 motor_130             1   launcher motor, 130-size DC motor
 launcher_wheel        2   rubber/silicone wheels: launcher drive wheel + spring-loaded idler (qty = number modelled)
-roller                2   loader feed roller + pinch roller, rubber tyre (qty = number modelled)
+roller                5   2 feed rollers + 2 loader pinch rollers + 1 launcher idler (qty = number modelled)
 esp32_devkit          1   ESP32 DevKit V1 (WROOM-32, 30-pin)
 tmc2209               2   TMC2209 StepStick driver modules
 drv8833               1   DRV8833 dual H-bridge module
@@ -30,7 +30,9 @@ magnet_6x3            1   6x3 mm neodymium magnet (turret home)
 ir_breakbeam          2   3 mm/5 mm IR break-beam pair (emitter+receiver), loader + launcher entry
 microswitch           1   rack bottom endstop microswitch
 pusher_blade          1   0.5 mm stainless steel pusher blade (cut strip)
-spring                1   launcher idler spring (add qty if more are modelled)
-shaft_3mm             4   3 mm silver-steel shafts: feed shaft, idler axle, 2 idler pivot pins
+spring                3   launcher idler spring + 2 loader pinch springs
+shaft_3mm             5   3 mm silver-steel shafts: feed, pinch, idler axle, 2 idler pivot pins
 m3_screw              -   M3 socket head screws, assorted lengths (qty = total modelled)
 m3_insert             -   M3 x 5.7 heat-set inserts (qty = total modelled)
+o_ring_belt           1   1.5 mm NBR O-ring belt, feed shaft -> pinch shaft (D-18)
+ribbon_cable          1   20-way 1.27 mm ribbon, clock-spring turret harness (D-19)
