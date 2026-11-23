@@ -43,7 +43,8 @@ about a quarter. Notes:
   sized for these numbers (`BATT_L/W/H` in `cad/params.scad`). If your pack differs, change the
   numbers and re-export the base.
 * **Rack stepper**: NEMA17 with an *integrated* T8x8 leadscrew (the screw is the motor shaft),
-  not a coupler version, **100 mm** screw (150 mm does not fit the height, DECISIONS D-10).
+  not a coupler version, **100 mm** screw (or cut a 150 mm one; DECISIONS D-10). It mounts at the
+  bottom of the turret, screw pointing up.
   The firmware assumes 8 mm lead (`LEAD_MM`).
 * **GT2 20T pulley**: file or turn off the top flange so it meshes with the belt-on-hub ring.
 * **TMC2209 modules**: the VREF math below assumes 0.11 ohm sense resistors (BTT/FYSETC style).
@@ -190,9 +191,13 @@ views, the exploded view (stack order) and the section view through rack, pusher
    **rack_comb**s (identical, one turned 180 degrees). Check a card slides into every slot. Screw the
    combs to the **rack_carriage** (4x M3 thread-forming) with the 4 LM8UU pressed in. Bolt the brass T8
    flange nut to the **rack_nut_arm** (4 inserts) and the arm to the carriage.
-8. (`renders/assembly_open_iso.png`, `assembly_open_back.png`) **rail_frame** with the two 157 mm rods and the **microswitch** in its pocket, on the turntable.
-   Slide the rack onto the rods. Fit the NEMA17-T8 in the **rack_motor_mount** on top, threading the
-   screw into the nut. With the motor unpowered, the rack must run the full travel when you turn the
+8. (`renders/assembly_open_iso.png`, `assembly_open_back.png`) **Rack drive and rails**. The rack
+   NEMA17-T8 sits **at the bottom**, standing face-up on the turntable beside the rack, with the
+   leadscrew pointing up (DECISIONS D-10): screw the **rack_motor_mount** plate to the motor face
+   (4x M3), set the motor into the mount's seat and fix the mount's feet to the turntable (4x M3 CSK
+   from below). **rail_frame** with the two 157 mm rods and the **microswitch** in its pocket goes on the
+   turntable. Slide the rack onto the rods and lower it so the leadscrew threads into the brass nut on
+   the nut arm. With the motor unpowered, the rack must run the full travel (81 mm) when you turn the
    screw by hand, and the microswitch must click when the rack reaches its bottom stop.
 9. (`renders/section_rack_pusher_launcher.png`, `section_detail_stations.png`) **Pusher**: **servo_mount** with the MG90S, screwed up into the **pusher_guide** wings. Centre the
    servo at 90 degrees (`servo 90` later, or a servo tester) before pressing the **pusher_pinion** onto

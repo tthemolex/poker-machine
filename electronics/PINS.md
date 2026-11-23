@@ -2,7 +2,7 @@
 
 Source of truth: `firmware/include/config.h` (`#define PIN_<SIGNAL> <gpio>`). This table is
 mirrored in [pins.csv](pins.csv) and in the ESP32 connector of [wiring.yml](wiring.yml).
-`python3 tools/check_pins.py` asserts that all three agree.
+`python3 tools/check_pins.py` asserts that config.h, pins.csv, wiring.yml and this table all agree.
 
 Board: ESP32 DevKit V1 (WROOM-32, 30-pin). All logic is 3.3 V. Never feed 5 V into a GPIO
 (the A3144 runs at 5 V but its output is open-collector and only pulled up to 3.3 V).

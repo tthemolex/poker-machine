@@ -109,7 +109,7 @@ void test_loader_verdicts() {
 }
 
 void test_fault_texts_fit_oled() {
-  for (int f = 0; f <= static_cast<int>(Fault::NoBattery); f++) {
+  for (int f = 0; f <= static_cast<int>(kLastFault); f++) {
     const char* t = faultText(static_cast<Fault>(f));
     TEST_ASSERT_NOT_NULL(t);
     TEST_ASSERT_TRUE(strlen(t) <= 21);

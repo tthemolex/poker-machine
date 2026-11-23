@@ -67,8 +67,9 @@ Idle = steppers disabled (EN high), servo detached, DC motors off, OLED on.
 12 V: 2 x 5 mA TMC2209 quiescent + 0.1 mA divider = 10 mA.
 5 V: ESP32 50 mA + servo (detached) 6 mA + IR emitters/hall 44 mA + 3V3 loads 19 mA = 119 mA,
 through the buck at 80 %: 0.74 W.
-**Idle total = 0.86 W = 72 mA at 12 V.** The IR emitters are the largest avoidable idle load
-(see Known issues in the README: they could be switched by a GPIO in a later revision).
+**Idle total = 0.86 W = 72 mA at 12 V.** The IR emitters are the largest avoidable idle load:
+44 mA x 5 V / 0.8 = 0.275 W (32 %). Switching them off with a GPIO in a later revision would cut idle to
+0.59 W, 1.47x the idle time (see Known issues in the README).
 
 ## Energy per hand and runtime
 
@@ -110,10 +111,10 @@ point to GND. Ratio = 22 / (100 + 22) = **0.1803**, firmware factor `VBAT_RATIO 
   A 3S pack cannot reach that, so no clamp diode is needed.
 * Divider current: 12.6 V / 122 k = 103 uA (only while switched on). Source impedance at the ADC
   is 100k || 22k = 18 k, and the 100 nF cap (tau 1.8 ms) gives the ADC sample-and-hold a stiff source.
-  It also filters stepper noise. The firmware averages 8 samples.
+  It also filters stepper noise. The firmware averages `VBAT_SAMPLES` = 16 samples.
 * Accuracy: 1 % resistors + ADC calibration give about +/-2 % (+/-0.2 V at 10.9 V). Read the
   battery with a multimeter once and compare it with the value shown on the OLED / serial log.
-  If they differ by more than 0.1 V, correct the divider ratio constant in `firmware/include/config.h`
-  (see BUILD.md, calibration).
+  If they differ by more than 0.1 V, set the scale factor `VBAT_CAL = meter / shown` in
+  `firmware/include/config.h` (see BUILD.md 8.2). Leave `VBAT_R_TOP_K` / `VBAT_R_BOT_K` at the nominal 100k / 22k.
 * Measure under load: the voltage sags ~0.2 V while the steppers move, so the firmware checks it
   before powering the motors (at hand start).

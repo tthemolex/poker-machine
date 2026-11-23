@@ -115,8 +115,9 @@ Then follow [docs/BUILD.md](docs/BUILD.md) section 8 (calibration) and [docs/FIR
   Warped or bent cards may not fit a 0.6 mm slot.
 * **Stretch height target (180 mm) is not reachable** with this battery under the turret and a
   52-shelf random-access rack (DECISIONS D-04).
-* **IR emitters are always on** (44 mA, about half of the idle draw). A GPIO-switched emitter supply
-  would roughly double the idle time; there is no free safe GPIO planned for it in this revision.
+* **IR emitters are always on** (44 mA at 5 V = 0.275 W, about 32 % of the 0.86 W idle draw). A
+  GPIO-switched emitter supply would stretch the idle time about 1.47x (65 h to about 96 h); there is no
+  free safe GPIO planned for it in this revision.
 * **Battery voltage reading** depends on resistor tolerance and ESP32 ADC calibration (+/-2 %);
   calibrate `VBAT_CAL` against a multimeter.
 * Power figures are calculated (electronics/power_budget.py), not measured.

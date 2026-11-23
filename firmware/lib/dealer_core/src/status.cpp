@@ -15,6 +15,7 @@ const char* faultText(Fault f) {
     case Fault::RackEmpty: return "RACK EMPTY";
     case Fault::BatteryLow: return "BATTERY LOW-CHARGE";
     case Fault::NoBattery: return "NO BATTERY (USB)";
+    case Fault::ExtraCards: return "MORE THAN 52 CARDS";
   }
   return "?";
 }

@@ -1,10 +1,10 @@
 part,qty,spec,price_pln,price_eur,example_source,category
 nema17_pancake,1,"NEMA17 pancake stepper 42x42x20-23 mm, 1.8 deg, ~1 A, 5 mm D-shaft (e.g. 17HS08-1004S)",35,8.20,AliExpress (StepperOnline 17HS08),motion
-nema17_t8_leadscrew,1,"NEMA17 40 mm stepper with integrated T8x8 (4-start) leadscrew, 100 mm long (150 mm does not fit, DECISIONS D-10) + brass T8 flange nut 22 mm, 1.5 A",65,15.20,AliExpress / Allegro (17HS4401 T8x8 150 mm),motion
+nema17_t8_leadscrew,1,"NEMA17 40 mm stepper with integrated T8x8 (4-start) leadscrew, 100 mm long (150 mm does not fit, DECISIONS D-10) + brass T8 flange nut 22 mm, 1.5 A",65,15.20,"AliExpress / Allegro (17HS4401 integrated T8x8, 100 mm screw; or cut a 150 mm one to 100 mm)",motion
 rod_8mm,2,"8 mm hardened chrome steel rod, 2 pieces cut to 157 mm",20,4.70,AliExpress / Allegro (linear shaft 8 mm),motion
 lm8uu,4,LM8UU linear ball bearing 8x15x24 mm (2 per rod),12,2.80,AliExpress / Botland,motion
 lazy_susan_120,1,"Round aluminium lazy susan bearing 120 mm OD, 70 mm ID, 9.5 mm thick",25,5.90,AliExpress (VXB-style round turntable bearing 120 mm),motion
-gt2_pulley_20t,1,"GT2 20T aluminium pulley, 5 mm bore, for 10 mm belt (wide teeth), top flange removed (file/lathe off) to mesh the belt-on-hub ring",8,1.90,AliExpress / Botland,motion
+gt2_pulley_20t,1,"GT2 20T aluminium pulley, 5 mm bore, 10 mm-belt width on purpose: the wide toothed face meshes the 6 mm belt ring over its full height despite tolerances (DECISIONS D-11). Remove the top flange (file/lathe) so the ring can overlap it",8,1.90,AliExpress / Botland,motion
 gt2_belt,1,"GT2 6 mm open belt, 400 mm cut length glued teeth-out on the printed ring hub to form the 200T turret ring",10,2.30,AliExpress / Allegro (GT2 belt 6 mm per metre),motion
 mg90s_servo,1,"MG90S metal-gear micro servo, 4.8-6 V",18,4.20,Botland / AliExpress,motion
 n20_motor,1,"N20 micro gear motor ~100 rpm at 5 V (6 V type), 3 mm D-shaft",15,3.50,AliExpress / Botland,motion

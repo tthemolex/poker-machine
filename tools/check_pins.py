@@ -4,10 +4,11 @@
 Sources:
   firmware/include/config.h   `#define PIN_<SIGNAL> <gpio>`
   electronics/pins.csv         signal,gpio,direction,connects_to,notes
+  electronics/PINS.md          human pin table (markdown, first table: Signal | GPIO | Dir | ...)
   electronics/wiring.yml       WireViz: connector `ESP32` with pin labels `GPIO<n>`; each cable
                                wire landing on an ESP32 GPIO has a wirelabel = signal name.
 
-Asserts: same signal set in all three, same GPIO per signal, no GPIO used by two signals,
+Asserts: same signal set in all four, same GPIO per signal, no GPIO used by two signals,
 no flash pins (6-11), input-only pins (34-39) only used as inputs, every GPIO label on the
 ESP32 connector is wired. Warns about strapping / UART pins.
 
@@ -66,6 +67,39 @@ def parse_csv(path):
             if d not in ("in", "out", "io"):
                 errs.append(f"pins.csv:{i}: direction must be in/out/io, got {d!r}")
             rows[s] = {"gpio": g, "dir": d, "to": r["connects_to"]}
+    return rows, errs
+
+
+def parse_md(path):
+    """First markdown table whose header starts with 'Signal' and has a 'GPIO' column."""
+    rows, errs = {}, []
+    hdr = None
+    with open(path) as f:
+        for ln, line in enumerate(f, 1):
+            line = line.strip()
+            if not line.startswith("|"):
+                if hdr is not None and rows:
+                    break
+                continue
+            cells = [c.strip().strip("`*") for c in line.strip("|").split("|")]
+            if hdr is None:
+                if cells and cells[0].lower().startswith("signal") and any(c.lower() == "gpio" for c in cells):
+                    hdr = [c.lower() for c in cells]
+                continue
+            if set(line) <= set("|-: "):
+                continue
+            row = dict(zip(hdr, cells))
+            sig = cells[0]
+            try:
+                g = int(row["gpio"])
+            except (KeyError, ValueError):
+                errs.append(f"PINS.md:{ln}: bad gpio in {line!r}")
+                continue
+            if sig in rows:
+                errs.append(f"PINS.md:{ln}: duplicate signal {sig}")
+            rows[sig] = {"gpio": g, "dir": row.get("dir", "").lower()}
+    if hdr is None:
+        errs.append("PINS.md: no table with a 'Signal' and a 'GPIO' column found")
     return rows, errs
 
 
@@ -147,9 +181,10 @@ def main():
     p_cfg = os.path.join(root, "firmware/include/config.h")
     p_csv = os.path.join(root, "electronics/pins.csv")
     p_yml = os.path.join(root, "electronics/wiring.yml")
+    p_md = os.path.join(root, "electronics/PINS.md")
 
     errs, warns = [], []
-    for p in (p_cfg, p_csv, p_yml):
+    for p in (p_cfg, p_csv, p_yml, p_md):
         if not os.path.exists(p):
             errs.append(f"missing {os.path.relpath(p, root)}")
     if errs:
@@ -159,7 +194,11 @@ def main():
     fw, e1 = parse_config(p_cfg)
     tb, e2 = parse_csv(p_csv)
     wgpio, glabels, e3 = parse_wiring(p_yml)
-    errs += e1 + e2 + e3
+    md, e4 = parse_md(p_md)
+    errs += e1 + e2 + e3 + e4
+    for s_, r in md.items():
+        if s_ in tb and r["dir"] != tb[s_]["dir"]:
+            errs.append(f"{s_}: direction PINS.md={r['dir']!r} pins.csv={tb[s_]['dir']!r}")
 
     # wiring: gpio -> exactly one signal
     wsig = {}
@@ -174,19 +213,21 @@ def main():
         if int(l[4:]) not in wgpio:
             errs.append(f"wiring.yml: ESP32 pin {l} is labelled but not wired")
 
-    signals = sorted(set(fw) | set(tb) | set(wsig), key=lambda s: (fw.get(s, tb.get(s, {}).get("gpio", 99)), s))
+    signals = sorted(set(fw) | set(tb) | set(wsig) | set(md), key=lambda s: (fw.get(s, tb.get(s, {}).get("gpio", 99)), s))
     rows = []
     for s in signals:
         f = fw.get(s)
         t = tb[s]["gpio"] if s in tb else None
         w = wsig.get(s)
-        ok = f is not None and f == t == w
+        m = md[s]["gpio"] if s in md else None
+        ok = f is not None and f == t == w == m
         if not ok:
-            errs.append(f"{s}: config.h={f} pins.csv={t} wiring.yml={w}")
-        rows.append((s, f, t, w, tb.get(s, {}).get("dir", "-"), "OK" if ok else "MISMATCH"))
+            errs.append(f"{s}: config.h={f} pins.csv={t} wiring.yml={w} PINS.md={m}")
+        rows.append((s, f, t, w, m, tb.get(s, {}).get("dir", "-"), "OK" if ok else "MISMATCH"))
 
     # duplicate gpios per source
-    for src, mp in (("config.h", fw), ("pins.csv", {k: v["gpio"] for k, v in tb.items()})):
+    for src, mp in (("config.h", fw), ("pins.csv", {k: v["gpio"] for k, v in tb.items()}),
+                    ("PINS.md", {k: v["gpio"] for k, v in md.items()})):
         seen = {}
         for s, g in mp.items():
             if g in seen:
@@ -207,11 +248,11 @@ def main():
             warns.append(f"{s}: GPIO{g} is UART0 (USB serial)")
 
     w = max([len(r[0]) for r in rows] + [6])
-    print(f"{'signal':<{w}}  config.h  pins.csv  wiring.yml  dir  result")
-    print("-" * (w + 44))
-    for s, f, t, wv, d, r in rows:
+    print(f"{'signal':<{w}}  config.h  pins.csv  wiring.yml  PINS.md  dir  result")
+    print("-" * (w + 53))
+    for s, f, t, wv, m, d, r in rows:
         fmt = lambda x: "-" if x is None else str(x)
-        print(f"{s:<{w}}  {fmt(f):>8}  {fmt(t):>8}  {fmt(wv):>10}  {d:>3}  {r}")
+        print(f"{s:<{w}}  {fmt(f):>8}  {fmt(t):>8}  {fmt(wv):>10}  {fmt(m):>7}  {d:>3}  {r}")
     print()
     for x in warns:
         print("WARN: " + x)
@@ -220,7 +261,7 @@ def main():
             print("FAIL: " + x)
         print(f"\ncheck_pins: FAIL ({len(errs)} problem(s))")
         return 1
-    print(f"check_pins: PASS ({len(rows)} signals agree in config.h, pins.csv and wiring.yml)")
+    print(f"check_pins: PASS ({len(rows)} signals agree in config.h, pins.csv, wiring.yml and PINS.md)")
     return 0
 
 
