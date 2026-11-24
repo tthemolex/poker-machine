@@ -61,9 +61,15 @@ void busy(const char* what) {
   ui::draw(status(true), true);
 }
 
+// Battery fault for a level that refuses a hand.
+Fault batteryFault(dealer::BatteryLevel l) {
+  if (l == dealer::BatteryLevel::Absent) return Fault::NoBattery;
+  if (l == dealer::BatteryLevel::Invalid) return Fault::BatterySense;
+  return Fault::BatteryLow;
+}
+
 void updateBattery() {
-  vbat = machine.readVbat();
-  battery = dealer::classifyBattery(vbat);
+  battery = machine.battery(&vbat);  // includes the plausibility guard
   lastVbatMs = millis();
 }
 
@@ -94,7 +100,7 @@ bool startHand() {
   updateBattery();
   Serial.printf("Battery: %.2f V (%s)\n", static_cast<double>(vbat), dealer::batteryText(battery));
   if (!dealer::batteryAllowsStart(battery)) {
-    faultWait(battery == dealer::BatteryLevel::Absent ? Fault::NoBattery : Fault::BatteryLow);
+    faultWait(batteryFault(battery));
     return false;
   }
   if (battery == dealer::BatteryLevel::Warn) Serial.println("Battery low: charge soon");
@@ -199,6 +205,7 @@ dealer::Event toEvent(dealer::Press p, bool isGo) {
 
 void setup() {
   Serial.begin(115200);
+  seedShuffleRng();  // FIRST: before any ADC use (IDF bootloader_random rule)
   ui::begin();
   storage::begin();
   const Settings s = storage::load();
@@ -230,7 +237,7 @@ void setup() {
   // show the fault and wait until the battery is switched on / charged.
   while (!dealer::batteryAllowsStart(battery)) {
     Serial.printf("Battery %.2f V: not homing.\n", static_cast<double>(vbat));
-    faultWait(battery == dealer::BatteryLevel::Absent ? Fault::NoBattery : Fault::BatteryLow);
+    faultWait(batteryFault(battery));
     updateBattery();
   }
 

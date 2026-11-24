@@ -14,12 +14,12 @@ module launcher_frame() difference() {
         box_at(-LF_XO, LF_XO, LF_Y0, LF_Y1, LF_TOP_Z0, LF_TOP_Z1);
         for (s = [-1, 1]) hull() {     // wedge feet
             box_at(s > 0 ? LF_XO - EPS : -LF_XO - 6.6, s > 0 ? LF_XO + 6.6 : -LF_XO + EPS, LF_Y0 + 1, 74, TT_TOP, TT_TOP + M3_INSERT_L + MIN_WALL);
-            box_at(s > 0 ? LF_XO - EPS : -LF_XO - 0.1, s > 0 ? LF_XO + 0.1 : -LF_XO + EPS, LF_Y0 + 1, 74, TT_TOP, TT_TOP + 10);
+            box_at(s > 0 ? LF_XO - EPS : -LF_XO - 0.1, s > 0 ? LF_XO + 0.1 : -LF_XO + EPS, LF_Y0 + 1, 74, TT_TOP, TT_TOP + 10);   // geom
         }
         for (c = CHEEKS) box_at(c[0], c[1], NIP_Y - 11.6, NIP_Y + 11.6, WHEEL_Z - 9.1, LF_TOP_Z0 + EPS);
         for (s = [-1, 1]) {   // finger posts (set back) + short stop tabs at the load plane
             box_at(s * FINGER_X - 3, s * FINGER_X + 3, LF_Y0, LF_Y0 + 3, Z_LOAD - 1, LF_TOP_Z0 + EPS);
-            box_at(s * FINGER_X - 3, s * FINGER_X + 3, FINGER_Y, LF_Y0 + EPS, Z_LOAD - 0.6, Z_LOAD + 2.4);
+            box_at(s * FINGER_X - 3, s * FINGER_X + 3, FINGER_Y, LF_Y0 + EPS, Z_LOAD - 0.6, Z_LOAD + 2.4);   // geom
         }
         box_at(EXITIR_X - 3.5, EXITIR_X + 3.5, LF_Y0, EXITIR_Y + 3.5, e + 2, LF_TOP_Z0 + EPS);
     }

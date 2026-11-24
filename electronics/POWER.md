@@ -58,7 +58,8 @@ Notes:
   Case A at 10.5 V (3.25 A) cannot happen: the firmware never runs the loader and the launcher together,
   the servo only pushes after the launcher spin-up delay, and steppers are at their peak only while accelerating.
 * The 5 V rail in case B (2.52 A) is inside the Mini560 3 A rating. The 130 motor start-up surge lasts
-  ~50 ms. A soft PWM ramp in firmware (if implemented) lowers it further.
+  ~50 ms. The firmware ramps the launcher PWM up over `LAUNCH_RAMP_MS` (120 ms, config.h), which lowers
+  the surge further, so 1.5 A is a conservative budget.
 * Inrush at switch-on: 2 x 100 uF plus the buck input caps. The TalentCell output handles it.
 
 ## Idle draw

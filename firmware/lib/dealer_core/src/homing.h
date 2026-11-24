@@ -8,7 +8,8 @@
 //
 //   1. sensor already active             -> go to CLEAR
 //   2. SEEK_NEG down to  -(est + window)  (est = believed angle above home, >= 0)
-//   3. SEEK_POS up to    +window          (covers a turret nudged the other way)
+//   3. SEEK_POS up to    +posWindow       (covers a turret nudged the other way;
+//                                         posWindow = min(window, full - est))
 //   4. not found                          -> FAIL (never sweeps further)
 //   CLEAR:    move + until the sensor releases (at most zoneMax), else FAIL (stuck)
 //   BACKOFF:  move + another `backoff`
@@ -27,6 +28,8 @@ struct HomingParams {
   int32_t windowSteps;  // search margin around the believed position
   int32_t zoneMaxSteps; // longest the sensor can stay active (zone width + margin)
   int32_t backoffSteps; // extra positive travel before the slow approach
+  int32_t fullSteps;    // TURRET_MAX_DEG in steps: the positive search never takes
+                        // the believed angle beyond this
 };
 
 enum class HomingSpeed : uint8_t { Fast, Slow };
@@ -39,7 +42,7 @@ struct HomingCmd {
 
 class TurretHoming {
  public:
-  explicit TurretHoming(const HomingParams& p) : p_(p) {}
+  explicit TurretHoming(const HomingParams& p);
 
   // Call repeatedly with the current relative position and sensor state; drive the
   // motor one step toward Move.target at Move.speed. Done: the current position is
@@ -48,12 +51,17 @@ class TurretHoming {
 
   // Lowest / highest relative position the search can ever command.
   int32_t minReach() const { return -(p_.estSteps + p_.windowSteps); }
+  // Highest relative position of the search phases (before the magnet is found).
+  int32_t searchMaxReach() const { return posWindow_; }
+  // Highest relative position overall (found at the top of the + window, then
+  // clear + backoff past the magnet).
   int32_t maxReach() const;
 
  private:
   enum class Phase : uint8_t { Start, SeekNeg, SeekPos, Clear, Backoff, Approach, Done, Fail };
   HomingCmd enterClear(int32_t pos);
   HomingParams p_;
+  int32_t posWindow_;
   Phase phase_ = Phase::Start;
   int32_t target_ = 0;
 };

@@ -4,7 +4,7 @@
 include <params.scad>
 include <lib/lib.scad>
 RF_X0 = ROD_X - 9;  RF_Y0 = -10;  RF_Y1 = 50;
-MSW_X = ROD_X;  MSW_Z0 = RAIL_BOT_Z1 + 0.1 - 6.5;    // switch body top 0.1 above block (lever 0.3)
+MSW_X = ROD_X;  MSW_Z0 = RAIL_BOT_Z1 + 0.1 - 6.5;    // switch body top 0.1 above block (lever 0.3)   // geom
 module rail_frame() difference() {
     union() {
         box_at(RF_X0, RAIL_WEB_X1, RF_Y0, RF_Y1, TT_TOP, RAIL_BOT_Z1);

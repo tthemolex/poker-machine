@@ -20,19 +20,16 @@ ESP32PWM feedPwm;   // DRV8833 IN1 (forward)
 ESP32PWM feedRev;   // DRV8833 IN2 (reverse, extra-card probe)
 ESP32PWM launchPwmOut;
 
-// Hardware RNG. True random while the RF subsystem runs; otherwise seeded from
-// the SAR ADC / bootloader entropy (still non-repeating across boots).
+// Shuffle RNG: xoshiro256** seeded once at boot with RNG_SEED_WORDS x 32 bits of
+// true entropy (seedShuffleRng), XOR esp_random() on every draw.
 class EspRandom : public dealer::RandomSource {
  public:
   uint32_t next32() override { return esp_random(); }
 };
 EspRandom hwRng;
-
-// SAR-ADC entropy on while dealing (no ADC reads happen then), off otherwise.
-struct EntropyScope {
-  EntropyScope() { if (cfg::HW_ENTROPY_DURING_DEAL) bootloader_random_enable(); }
-  ~EntropyScope() { if (cfg::HW_ENTROPY_DURING_DEAL) bootloader_random_disable(); }
-};
+dealer::Xoshiro256ss xoshiro;
+dealer::MixedSource shuffleRng(xoshiro, hwRng);
+bool rngSeeded = false;
 
 inline bool active(int pin) { return digitalRead(pin) == LOW; }  // all sensors active LOW
 
@@ -73,6 +70,21 @@ bool homeAxis(AccelStepper& s, int pin, float speed, int32_t backoffSteps, uint3
 }
 
 }  // namespace
+
+void seedShuffleRng() {
+  // IDF rule: bootloader_random_disable() must run BEFORE the ADC is initialised.
+  // This is the first thing setup() does, before any analogRead / attenuation call.
+  uint32_t seed[cfg::RNG_SEED_WORDS];
+  bootloader_random_enable();  // SAR-ADC noise into the hardware RNG (radios are off)
+  for (uint8_t i = 0; i < cfg::RNG_SEED_WORDS; i++) {
+    delayMicroseconds(50);     // let fresh entropy accumulate between reads
+    seed[i] = esp_random();
+  }
+  bootloader_random_disable();
+  xoshiro.seedWords(seed, cfg::RNG_SEED_WORDS);
+  for (uint8_t i = 0; i < cfg::RNG_SEED_WORDS; i++) seed[i] = 0;
+  rngSeeded = true;
+}
 
 void Machine::begin(uint64_t rackMask) {
   rack_.setMask(rackMask);
@@ -165,7 +177,7 @@ bool Machine::homeTurret() {
   }
   dealer::TurretHoming search({est, lroundf(cfg::TURN_SEARCH_WINDOW_DEG * spd),
                                lroundf(cfg::TURN_ZONE_MAX_DEG * spd),
-                               lroundf(cfg::TURN_BACKOFF_DEG * spd)});
+                               lroundf(cfg::TURN_BACKOFF_DEG * spd), full});
   turret.setCurrentPosition(0);  // search positions are relative to here
   turretHomed_ = turretParked_ = false;
   const uint32_t t0 = millis();
@@ -265,7 +277,8 @@ Fault Machine::loadOne(int shelf, uint32_t* blockedMs, bool* hopperEmpty) {
     blocked = millis() - tb;
   }
   *blockedMs = blocked;
-  switch (dealer::feedVerdict(saw, blocked, still)) {
+  const dealer::FeedVerdict verdict = dealer::feedVerdict(saw, blocked, still);
+  switch (verdict) {
     case dealer::FeedVerdict::HopperEmpty:
       feedOff();
       *hopperEmpty = true;
@@ -281,7 +294,7 @@ Fault Machine::loadOne(int shelf, uint32_t* blockedMs, bool* hopperEmpty) {
   feedOff();
   rack_.markLoaded(shelf);
   lastLoaded_ = shelf;
-  if (blocked > cfg::DOUBLE_MS) {
+  if (verdict == dealer::FeedVerdict::Double) {
     Serial.printf("Shelf %d probably holds 2 cards (beam blocked %lu ms)\n", shelf,
                   static_cast<unsigned long>(blocked));
     return fail(Fault::DoubleFeed);
@@ -309,7 +322,7 @@ Fault Machine::loadCards() {
 // sees a card's leading edge (or NO_CARD_MS), then reverses to pull it back.
 // The card is never driven into a full shelf.
 Fault Machine::probeExtraCard() {
-  rackAxis.moveTo(dealer::rackMmToSteps(dealer::rackNoShelfAtLoadMm()));
+  rackAxis.moveTo(dealer::rackMmToSteps(dealer::rackProbeMm()));
   runBoth();
   feedOn();
   const bool saw = waitFor(PIN_IR_LOAD, true, cfg::NO_CARD_MS);
@@ -327,7 +340,7 @@ Fault Machine::probeExtraCard() {
 
 // ---------------- Deal ----------------
 
-Fault Machine::ejectShelf(int shelf, float deg, uint8_t pwm, bool emptyIsFault) {
+Fault Machine::ejectShelf(int shelf, float deg, uint8_t pwm, bool emptyIsFault, bool kick) {
   if (!rack_.isOccupied(shelf)) return Fault::RackEmpty;
   aimAt(deg);
   rackAxis.moveTo(dealer::rackEjectSteps(shelf));
@@ -346,17 +359,26 @@ Fault Machine::ejectShelf(int shelf, float deg, uint8_t pwm, bool emptyIsFault) 
   pusher.write(cfg::PUSH_HOME);  // the launcher has the card now
   rack_.markDealt(shelf);        // it has left the shelf, whatever happens next
   if (!waitFor(PIN_IR_EXIT, false, cfg::EXIT_JAM_MS)) return fail(Fault::LauncherJam);
+  if (kick && cfg::LAUNCH_BURN_KICK > pwm) {
+    // Burn: the tail has passed the entry beam but is still in the nip. Speed the
+    // wheel up for the last part so the card is flung clear of the exit lip
+    // instead of tipping back at release.
+    launchPwmOut.write(cfg::LAUNCH_BURN_KICK);
+    delay(cfg::BURN_KICK_MS);
+    launchPwmOut.write(pwm);
+  }
   delay(cfg::PUSH_RETRACT_MS);   // the blade must clear the rack before it moves
   return Fault::None;
 }
 
 Fault Machine::executePlan(const dealer::Plan& plan) {
-  EntropyScope entropy;
+  if (!rngSeeded) seedShuffleRng();  // never happens: setup() seeds first
   for (uint8_t i = 0; i < plan.count; i++) {
     const dealer::DealAction& a = plan.actions[i];
-    const int shelf = rack_.pickRandom(hwRng);  // the shuffle
+    const int shelf = rack_.pickRandom(shuffleRng);  // the shuffle
     if (shelf < 0) return fail(Fault::RackEmpty);
-    const Fault f = ejectShelf(shelf, a.deg, launchPwm(a.launch), true);
+    const Fault f = ejectShelf(shelf, a.deg, launchPwm(a.launch), true,
+                               a.launch == dealer::Launch::Burn);
     if (f != Fault::None) return f;
   }
   launchSet(0);
@@ -365,16 +387,15 @@ Fault Machine::executePlan(const dealer::Plan& plan) {
 }
 
 Fault Machine::purgeShelf(int shelf) {
-  const Fault f = ejectShelf(shelf, dealer::burnDeg(), cfg::LAUNCH_PURGE, false);
+  const Fault f = ejectShelf(shelf, dealer::burnDeg(), cfg::LAUNCH_PURGE, false, false);
   launchSet(0);
   return f == Fault::RackEmpty ? Fault::None : f;
 }
 
 Fault Machine::purgeAll() {
-  EntropyScope entropy;  // not needed for the order, keeps the ADC handling uniform
   for (int s = 0; s < dealer::Rack::kShelves; s++) {
     if (!rack_.isOccupied(s)) continue;
-    const Fault f = ejectShelf(s, dealer::burnDeg(), cfg::LAUNCH_PURGE, false);
+    const Fault f = ejectShelf(s, dealer::burnDeg(), cfg::LAUNCH_PURGE, false, false);
     if (f != Fault::None) return f;
   }
   launchSet(0);
@@ -391,10 +412,16 @@ void Machine::calRackMm(float mm) {
   runBoth();
 }
 void Machine::calRackSteps(int32_t steps) {
+  const int32_t top = dealer::rackMmToSteps(dealer::kRackMaxMm + cfg::RACK_ZERO_TRIM_MM);
+  if (steps < 0) steps = 0;
+  if (steps > top) steps = top;
   rackAxis.moveTo(steps);
   runBoth();
 }
 void Machine::calAim(float deg) {
+  // Console input is clamped (not wrapped) into the allowed 0..360 deg window.
+  if (!(deg >= 0.0f)) deg = 0.0f;
+  if (deg > geom::TURRET_MAX_DEG - 0.01f) deg = geom::TURRET_MAX_DEG - 0.01f;
   aimAt(deg);
   runBoth();
 }
@@ -418,11 +445,13 @@ bool Machine::sensor(int pin) { return active(pin); }
 // ---------------- Battery ----------------
 
 float Machine::readVbat() {
-  // Re-apply the ADC setup: bootloader_random_disable() resets SAR ADC registers.
-  analogSetWidth(12);
-  analogSetPinAttenuation(PIN_VBAT, ADC_11db);
-  (void)analogReadMilliVolts(PIN_VBAT);  // discard the first conversion
   uint32_t mv = 0;
   for (uint8_t i = 0; i < cfg::VBAT_SAMPLES; i++) mv += analogReadMilliVolts(PIN_VBAT);
   return dealer::vbatFromPinMv(static_cast<float>(mv) / cfg::VBAT_SAMPLES);
+}
+
+dealer::BatteryLevel Machine::battery(float* volts) {
+  const float v = readVbat();
+  if (volts) *volts = v;
+  return vmon_.update(v);
 }

@@ -41,12 +41,12 @@ Measured from the meshes of every placed part (printed, vendor, cards) at turret
 | | measured | hard limit | margin | stretch target | gap to stretch |
 |---|---|---|---|---|---|
 | footprint (2 x max radius) | **199.0 mm** | 200 mm | +1.0 mm | 170 mm | +29.0 mm |
-| height | **207.5 mm** | 220 mm | +12.5 mm | 180 mm | +27.5 mm |
+| height | **213.5 mm** | 220 mm | +6.5 mm | 180 mm | +33.5 mm |
 
 Hard limits: **PASS**. Max axis-aligned bounding box side: 199.0 mm.
 
 Radius drivers: base_shell 99.5, ui_bezel 99.5, turntable 99.5, slot_panel 99.5, turret_shell 99.5.
-Height drivers: top_cap 207.5, hopper_lid 207.5, rack_comb_px 205.0, rack_comb_nx 205.0.
+Height drivers: top_cap 213.5, hopper_lid 213.5, rack_comb_px 211.0, rack_comb_nx 211.0.
 
 The size-optimization pass and every size trade-off are in [docs/DECISIONS.md](docs/DECISIONS.md). The stretch target cannot be met with this battery and a 52-slot random-access rack (D-01, D-04).
 <!-- /SIZE_REPORT -->
@@ -122,9 +122,20 @@ Then follow [docs/BUILD.md](docs/BUILD.md) section 8 (calibration) and [docs/FIR
 * **Battery voltage reading** depends on resistor tolerance and ESP32 ADC calibration (+/-2 %);
   calibrate `VBAT_CAL` against a multimeter.
 * Power figures are calculated (electronics/power_budget.py), not measured.
+* **Burn spot vs board: unverified until the first prototype.** The burn spot (22 degrees) is only 6 degrees
+  from board slot 4, so burns and board cards are separated radially: burns dribble right next to the
+  base, and `LAUNCH_BOARD` must put the board at least one card length (70 mm) beyond the burn pile.
+  Neither "face down" nor a clean exit at burn speed has been tested. Pass/fail test: BUILD.md 8.7
+  (B1-B5). If burns stall in the exit slot, the firmware needs a short burn kick.
 
 ### Known deviations from the spec
 
+* **Shelf pitch 1.5 mm instead of the 1.6 mm target** ([DECISIONS D-01](docs/DECISIONS.md)): 1.6 mm left
+  only 0.5 mm of height margin. Fins are 0.9 mm (2 perimeters), a documented exception to the 1.2 mm
+  minimum wall; card clearance is 0.30 mm.
+* **Turret ring 200T / 10:1 instead of ~120T / 6:1** ([DECISIONS D-02](docs/DECISIONS.md), D-11): only a
+  ring outside the bearing OD meshes the pinion in the base crescent without an extra belt layer. It is a
+  printed hub with a GT2 belt glued teeth-out. Bonus: finer aim (88.9 microsteps per degree).
 * **No burn tray on the turret** ([DECISIONS D-20](docs/DECISIONS.md)): it cannot fit inside the
   envelope, because a card leaving the nip needs more free path than there is. Burns are launched very
   slowly, face down, onto a burn spot on the table at `BURN_DEG` = 22 degrees, next to the board. Collect

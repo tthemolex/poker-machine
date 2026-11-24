@@ -13,7 +13,7 @@ float rackEjectMm(int shelf) {
 
 float rackLoadMm(int shelf) { return rackEjectMm(shelf) + geom::STATION_OFFSET; }
 
-float rackNoShelfAtLoadMm() { return rackEjectMm(geom::SHELF_COUNT - 1); }
+float rackProbeMm() { return geom::PROBE_RACK_POS + cfg::RACK_ZERO_TRIM_MM; }
 
 int32_t rackMmToSteps(float mm) {
   return static_cast<int32_t>(lroundf(mm * geom::RACK_STEPS_PER_MM));

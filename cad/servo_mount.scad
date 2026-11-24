@@ -9,7 +9,7 @@ module servo_mount() difference() {
         box_at(SM_X0, SM_X1, SERVO_FIX[1][1] - 4, SERVO_FIX[0][1] + 4, PIN_Z - 8.5, WING_Z0);
         for (p = SERVO_FIX) box_at(SM_X0, 24, p[1] - 4, p[1] + 4, WING_Z0 - 2.5, WING_Z0);
     }
-    box_at(SM_X0 - 1, SM_X1 + 1, PIN_Y - 16.9 - 0.3, PIN_Y + 5.9 + 0.3, PIN_Z - 6.1 - 0.3, PIN_Z + 6.1 + 0.3);
+    box_at(SM_X0 - 1, SM_X1 + 1, PIN_Y - 16.9 - 1.5 * GAP, PIN_Y + 5.9 + 1.5 * GAP, PIN_Z - 6.1 - 1.5 * GAP, PIN_Z + 6.1 + 1.5 * GAP);
     for (y = [PIN_Y - 19.3, PIN_Y + 8.3]) translate([SM_X0 - 1, y, PIN_Z]) rotate([0, 90, 0]) cylinder(d = M2_PILOT_D, h = 5);
     for (p = SERVO_FIX) translate([p[0], p[1], WING_Z0 - 3]) m3_clear(4);
 }

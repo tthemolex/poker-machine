@@ -10,7 +10,8 @@ tools/cad_export.py first).
    grouped into connected regions. Regions > 25 mm2 must be documented in OVERHANG_OK with
    their kind (bridge / cantilever / hole roof) and a reason.
 3. Fit lint: printed-part sources must not use bare fit literals (e.g. "d = 12.2",
-   "SHAFT_D + 0.3"); fits come from TOL via fit_free / fit_slide / fit_press / GAP.
+   "SHAFT_D + 0.3", or any literal < 1 mm); fits come from TOL via fit_free / fit_slide /
+   fit_snug / fit_press / GAP / BLADE_CLR. Pure geometry lines carry an explicit "// geom".
 Exit 1 on any FAIL.
 """
 import pathlib
@@ -32,6 +33,9 @@ THIN_OK = {
     "rack_comb": (0.40, "shelf fins 0.9 mm incl. their 45 deg lead-in chamfers at the open faces (D-01 exception)"),
     "pusher_pinion": (0.45, "m1 involute tooth tips"),
     "pusher_slider": (0.45, "m1 gear-rack tooth tips"),
+    "turntable": (0.75, "feather edge where the CSK cone meets the 2.5 mm plate (inherent to countersunk screws)"),
+    "loader_gear_feed": (0.25, "m0.5 involute tooth tips"),
+    "loader_gear_pinch": (0.25, "m0.5 involute tooth tips"),
     }
 # part -> list of (kind, max area mm2, reason). A region is accepted if some entry's area >= region area.
 OVERHANG_OK = {
@@ -63,9 +67,11 @@ OVERHANG_OK = {
     "base_deck": [("hole roof", 120, "standoff counterbores")],
     "shell_anchor": [("bridge", 40, "insert hole ends")],
     "spool_hub": [("bridge", 60, "ribbon slit roof")],
-    "loader_pulley_feed": [], "loader_pulley_pinch": [],
+    "loader_gear_feed": [], "loader_gear_pinch": [], "bearing_spacer": [],
 }
-FIT_LINT = [re.compile(r"\bd\s*=\s*\d+\.\d+"), re.compile(r"_D\s*[+-]\s*\d*\.\d+")]
+FIT_LINT = [re.compile(r"\bd\s*=\s*\d+\.\d+"),            # bare diameters
+            re.compile(r"_D\s*[+-]\s*\d*\.\d+"),             # <PARAM>_D +- literal
+            re.compile(r"(?<![\w.])0?\.\d+(?![\w.])")]        # any literal below 1 mm (fits must use TOL / GAP / fit_*)
 LINT_OK = re.compile(r"//\s*geom\b")   # mark a non-fit geometric literal with "// geom"
 
 

@@ -1,5 +1,5 @@
 part,qty,spec,price_pln,price_eur,example_source,category
-nema17_pancake,1,"NEMA17 pancake stepper 42x42x20-23 mm, 1.8 deg, ~1 A, 5 mm D-shaft (e.g. 17HS08-1004S)",35,8.20,AliExpress (StepperOnline 17HS08),motion
+nema17_pancake,1,"NEMA17 pancake stepper 42x42x20-23 mm, 1.8 deg, ~1 A, 5 mm D-shaft at least 22.5 mm long (the pulley sits high, D-19) (e.g. 17HS08-1004S long-shaft)",35,8.20,AliExpress (StepperOnline 17HS08),motion
 nema17_t8_leadscrew,1,"NEMA17 40 mm stepper with integrated T8x8 (4-start) leadscrew, 100 mm long (150 mm does not fit, DECISIONS D-10) + brass T8 flange nut 22 mm, 1.5 A",65,15.20,"AliExpress / Allegro (17HS4401 integrated T8x8, 100 mm screw; or cut a 150 mm one to 100 mm)",motion
 rod_8mm,2,"8 mm hardened chrome steel rod, 2 pieces cut to 157 mm",20,4.70,AliExpress / Allegro (linear shaft 8 mm),motion
 lm8uu,4,LM8UU linear ball bearing 8x15x24 mm (2 per rod),12,2.80,AliExpress / Botland,motion
@@ -11,10 +11,9 @@ n20_motor,1,"N20 micro gear motor ~100 rpm at 5 V (6 V type), 3 mm D-shaft",15,3
 motor_130,1,"130-size brushed DC motor 3-6 V (run at 5 V), 2 mm shaft",5,1.20,Botland / AliExpress,motion
 launcher_wheel,1,"Rubber drive wheel 24 mm OD x 10 mm wide, 2 mm bore (launcher, on the 130 motor)",5,1.2,AliExpress (130 motor rubber wheel),motion
 roller,5,"Rubber rollers, all 3 mm bore: 2x feed roller 14 mm OD x 8 mm, 2x loader pinch roller 7 mm OD x 6 mm (D-18), 1x launcher pinch idler 12 mm OD x 12 mm (or printed hubs + rubber tube)",20,4.7,AliExpress (N20 rubber wheel),motion
-pusher_blade,1,"0.5 mm spring/stainless steel shim stock, blade 24 x 50.5 mm (cut, deburr, round corners)",10,2.30,Allegro (blacha nierdzewna 0.5 mm) / hardware store,motion
-spring,3,Compression springs 5 mm OD x 10 mm: 1x 0.6 mm wire (launcher idler preload) + 2x 0.4 mm wire (loader pinch shaft hold-down); buy an assortment,10,2.3,AliExpress (spring assortment box),motion
+pusher_blade,1,"0.5 mm spring/stainless steel shim stock, blade 24 x 52.5 mm with 2x 2.4 mm holes (cut, deburr, round tip corners)",10,2.30,Allegro (blacha nierdzewna 0.5 mm) / hardware store,motion
+spring,1,"Compression spring 5 mm OD x 10 mm, 0.6 mm wire (launcher idler preload); buy an assortment",10,2.3,AliExpress (spring assortment box),motion
 shaft_3mm,5,"3 mm silver-steel rod, cut: feed shaft 106 mm, pinch shaft 84.5 mm, idler axle 17.6 mm, 2 idler pivot pins 5.7 mm (one 330 mm rod is enough)",8,1.90,AliExpress / Allegro (silver steel 3 mm),motion
-o_ring_belt,1,"NBR O-ring 1.5 mm cord, ~80 mm loop (about 24 x 1.5 mm), or 1.5 mm cord joined with CA: feed shaft to pinch shaft drive (D-18)",5,1.20,AliExpress / hardware store (O-ring assortment),motion
 esp32_devkit,1,"ESP32 DevKit V1, ESP-WROOM-32, 30-pin, USB",30,7.00,AliExpress / Botland,electronics
 tmc2209,2,"TMC2209 StepStick module (BTT/FYSETC style, 0.11 ohm sense), standalone STEP/DIR",50,11.70,AliExpress (BIGTREETECH TMC2209 V1.3),electronics
 drv8833,1,"DRV8833 dual H-bridge module, 2.7-10.8 V, 1.2 A per channel",8,1.90,AliExpress / Botland,electronics
@@ -31,7 +30,7 @@ ir_breakbeam,2,"3 mm IR break-beam sensor pair (emitter + receiver), 3.3-5 V, op
 microswitch,1,"Mini lever microswitch 12.8 x 5.8 x 6.5 mm (KW10/SS-5GL style), NO/NC",3,0.70,Botland / AliExpress,sensors
 m3_screw,70,"M3 socket head screws, ~70 total: M3x6..M3x12 (incl. 4 thread-forming into the T8 nut arm, 2 for the slot panel) + 4x M3x16 (shell tabs into the shell anchors, from above); A2 stainless assortment",20,4.70,AliExpress / hardware store (assortment box),hardware
 m3_insert,40,"M3 x 5.7 mm brass heat-set inserts, OD 4.6 mm (~33 used)",15,3.50,AliExpress / Allegro,hardware
-m3_csk_screw,26,"M3x8 countersunk screws (turntable to lazy susan, rack motor mount feet, shell anchors from below, battery door)",5,1.20,hardware store / AliExpress,hardware
+m3_csk_screw,26,"M3x8 countersunk screws (turntable to lazy susan, rack motor mount feet, shell anchors from below, 4x battery door)",5,1.20,hardware store / AliExpress,hardware
 m2_screw,4,"M2 self-tapping / M2x6 screws (servo mount, pusher blade)",3,0.70,hardware store / AliExpress,hardware
 m3_nut,20,M3 hex nuts (spares for clamps),4,0.90,hardware store,hardware
 m8_nut,2,"M8 hex nuts (steel), ballast in the hopper weight",2,0.50,hardware store,hardware
@@ -40,7 +39,7 @@ capacitors,1,"2x 100 uF 25 V electrolytic (driver VM), 3x 100 nF ceramic (motor 
 dc_plug_cable,2,5.5x2.1 mm male DC plug pigtails (battery output + battery charge input),8,1.90,AliExpress / Botland,power
 wire_power,1,"Silicone wire 20 AWG (0.5 mm2) red + black, 1 m each",12,2.80,AliExpress / Botland,wiring
 wire_signal,1,"Silicone/ribbon wire 26 AWG (0.14 mm2) assorted colours, ~5 m total",15,3.50,AliExpress / Botland,wiring
-ribbon_cable,1,"20-way 1.27 mm flat ribbon cable (AWG28), ~400 mm used (buy 1 m): clock-spring turret harness through the bearing ID (D-19)",10,2.30,AliExpress / Botland (tasma IDC 20 zyl. 1.27 mm),wiring
+ribbon_cable,2,"10-way 1.27 mm flat ribbon cable (AWG28, 12.7 x 0.9 mm), ~450 mm each (buy 1 m): the two lie flat on each other and are wound together on edge as the turret clock spring (D-19)",12,2.80,AliExpress / Botland (tasma IDC 20 zyl. 1.27 mm),wiring
 connectors_dupont_jst,1,Dupont / JST-XH 2.54 mm connector kit + female headers for ESP32 and drivers,20,4.70,AliExpress,wiring
 wago_221,2,Wago 221-413 3-way lever connectors (12 V / 5 V distribution),6,1.40,hardware store,wiring
 heat_shrink,1,Heat-shrink tube assortment,8,1.90,AliExpress,wiring

@@ -1,4 +1,5 @@
 // Battery thresholds, button debouncing, LED patterns, loader verdicts, fault texts.
+#include <math.h>
 #include <string.h>
 #include <unity.h>
 
@@ -43,6 +44,27 @@ static void hold(Button& b, bool level, uint32_t ms) {
     if (p == Press::Short) shorts++;
     if (p == Press::Long) longs++;
   }
+}
+
+void test_vbat_plausibility_guard() {
+  VbatMonitor m;
+  TEST_ASSERT_EQUAL(BatteryLevel::Absent, m.update(0.05f));   // USB only
+  TEST_ASSERT_EQUAL(BatteryLevel::Ok, m.update(12.3f));       // switched on: not a "jump"
+  TEST_ASSERT_EQUAL(BatteryLevel::Ok, m.update(12.1f));
+  TEST_ASSERT_EQUAL(BatteryLevel::Invalid, m.update(13.6f));  // jump 1.5 V (ADC glitch)
+  TEST_ASSERT_FALSE(batteryAllowsStart(m.level()));
+  TEST_ASSERT_EQUAL(BatteryLevel::Invalid, m.update(12.1f));  // jump back: still invalid
+  TEST_ASSERT_EQUAL(BatteryLevel::Ok, m.update(12.05f));      // stable again: healed
+  TEST_ASSERT_EQUAL(BatteryLevel::Invalid, m.update(14.5f));  // above plausible max
+  TEST_ASSERT_EQUAL(BatteryLevel::Invalid, m.update(14.4f));  // still above max
+  TEST_ASSERT_EQUAL(BatteryLevel::Invalid, m.update(10.2f));  // jump down 4.2 V
+  TEST_ASSERT_EQUAL(BatteryLevel::Refuse, m.update(10.3f));   // real low battery
+  TEST_ASSERT_EQUAL(BatteryLevel::Warn, m.update(10.6f));
+  TEST_ASSERT_EQUAL(BatteryLevel::Absent, m.update(0.0f));    // switched off: allowed
+  VbatMonitor n;
+  TEST_ASSERT_EQUAL(BatteryLevel::Invalid, n.update(-1.0f));
+  TEST_ASSERT_EQUAL(BatteryLevel::Invalid, n.update(NAN));  // NaN
+  TEST_ASSERT_EQUAL_STRING("ERR", batteryText(BatteryLevel::Invalid));
 }
 
 void test_button_short_long_and_bounce() {
@@ -123,6 +145,7 @@ int main(int, char**) {
   UNITY_BEGIN();
   RUN_TEST(test_battery_divider);
   RUN_TEST(test_battery_thresholds);
+  RUN_TEST(test_vbat_plausibility_guard);
   RUN_TEST(test_button_short_long_and_bounce);
   RUN_TEST(test_button_held_at_boot_ignored_and_millis_wrap);
   RUN_TEST(test_led_patterns);

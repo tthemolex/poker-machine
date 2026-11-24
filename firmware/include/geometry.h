@@ -12,10 +12,10 @@ constexpr float SHELF_FIN = 0.9f;  // fin thickness (noted exception to 1.2 mm w
 constexpr float SHELF_GAP = 0.6f;  // card slot height
 constexpr float RACK_CAP = 1.2f;  // bottom plate thickness below shelf 0 slot
 constexpr float STATION_OFFSET = 4.5f;  // load station above eject station
-constexpr float RACK_Z_MIN = 44.5f;  // world z of rack bottom when homed (microswitch)
+constexpr float RACK_Z_MIN = 50.5f;  // world z of rack bottom when homed (microswitch); +6 for the bearing spacer, D-19
 constexpr float RACK_TRAVEL = 81.0f;  // mm
-constexpr float Z_EJECT = 122.2f;
-constexpr float Z_LOAD = 126.7f;
+constexpr float Z_EJECT = 128.2f;
+constexpr float Z_LOAD = 132.7f;
 constexpr int32_t LEAD_MM = 8;  // T8x8 (4 starts)
 constexpr int32_t MOTOR_STEPS = 200;  // full steps / rev
 constexpr int32_t RACK_USTEPS = 8;  // TMC2209 MS1=MS2=GND
@@ -38,4 +38,5 @@ constexpr int32_t PUSH_HOME_DEG = 10;  // servo angle with the blade retracted
 constexpr int32_t PUSH_SWEEP_DEG = 150;  // servo travel home -> out
 constexpr int32_t PUSH_OUT_DEG = 160;  // servo angle at full stroke
 constexpr float PUSH_STROKE_MM = 19.634954084936187f;  // blade travel
+constexpr float PROBE_RACK_POS = 3.4499999999999913f;  // mm
 }  // namespace geom

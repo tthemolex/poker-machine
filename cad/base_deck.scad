@@ -5,7 +5,7 @@ include <lib/lib.scad>
 module base_deck() {
     difference() {
         union() {
-            translate([0, 0, DECK_Z]) cylinder(r = BASE_RI - 0.3, h = DECK_T, $fn = 240);
+            translate([0, 0, DECK_Z]) cylinder(r = BASE_RI - 1.5 * GAP, h = DECK_T, $fn = 240);
             // pancake NEMA standoffs (motor face screws)
             for (x = [-1, 1], y = [-1, 1]) translate([x * NEMA_HOLE / 2, TM_Y + y * NEMA_HOLE / 2, TM_FACE_Z + 0.1]) cylinder(d = 9.5, h = DECK_Z - TM_FACE_Z);   // geom: standoff
 
@@ -13,7 +13,7 @@ module base_deck() {
         translate([0, 0, DECK_Z - 1]) cylinder(r = SPOOL_RI - 2.5 + TOL, h = 30);         // spool-hub peg hole
         // radial ribbon slot through the deck over the battery, to the -Y electronics crescent (D-19)
         translate([0, 0, DECK_Z - 1]) box_at(RIBBON_SLOT_X[0], RIBBON_SLOT_X[1], RIBBON_SLOT_Y1, -SPOOL_RI + 2, 0, 10);
-        translate([0, 0, DECK_Z - 1]) box_at(RIBBON_SLOT_X[0], RIBBON_W / 2 + 1, -SPOOL_RI - 2.5, -SPOOL_RI + 0.3, 0, 10);
+        translate([0, 0, DECK_Z - 1]) box_at(RIBBON_SLOT_X[0], RIBBON_W / 2 + 1, -SPOOL_RI - 2.5, -SPOOL_RI + 0.3, 0, 10);   // geom
         translate([0, TM_Y, DECK_Z - 1]) cylinder(d = PUL_HUB_D + 2, h = 10);     // pulley
         for (x = [-1, 1], y = [-1, 1]) translate([x * NEMA_HOLE / 2, TM_Y + y * NEMA_HOLE / 2, TM_FACE_Z]) m3_clear(30);
         for (x = [-1, 1], y = [-1, 1]) translate([x * NEMA_HOLE / 2, TM_Y + y * NEMA_HOLE / 2, DECK_Z + DECK_T - 3]) cylinder(d = M3_HEAD_CB, h = 4);

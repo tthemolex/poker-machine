@@ -47,6 +47,8 @@ about a quarter. Notes:
   bottom of the turret, screw pointing up.
   The firmware assumes 8 mm lead (`LEAD_MM`).
 * **GT2 20T pulley**: file or turn off the top flange so it meshes with the belt-on-hub ring.
+* **Turret stepper**: the pancake NEMA17 needs a 5 mm shaft **at least 22.5 mm long** (the pulley sits
+  6 mm higher because of the bearing spacer, D-19). Check before ordering; short-shaft pancakes do not fit.
 * **TMC2209 modules**: the VREF math below assumes 0.11 ohm sense resistors (BTT/FYSETC style).
 * **IR break-beams**: open-collector receivers (Adafruit 2167 style). Emitters and receivers run on 5 V; the
   receiver output is open-collector and only pulled up to 3.3 V by the ESP32, so it is safe.
@@ -83,7 +85,7 @@ printed part).
 | [hall_post](../renders/parts/hall_post.png) | [hall_post.stl](../cad/stl/hall_post.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | upside down (sensor face on bed) | pegs into the deck; A3144 glued in the groove |
 | [spool_hub](../renders/parts/spool_hub.png) | [spool_hub.stl](../cad/stl/spool_hub.stl) | 1 | PETG | 0.2 | 3 | 40 % | none | upside down (top on bed) | static clock-spring hub for the ribbon harness (D-19); pegs into the deck |
 | [ui_bezel](../renders/parts/ui_bezel.png) | [ui_bezel.stl](../cad/stl/ui_bezel.stl) | 1 | PETG black | 0.2 | 3 | 20 % | none | upright (installed Z up) | radial 12 mm button / 5 mm LED holes; OLED window top is a 23 mm bridge; bosses keep >= 1.2 mm behind the flush recesses |
-| [turntable](../renders/parts/turntable.png) | [turntable.stl](../cad/stl/turntable.stl) | 1 | PETG | 0.15 | 4 | 40 % | none | upside down (top face on bed) | 200T ring hub (GT2 belt glued teeth-out D-11) with a 0.6 mm seat lip; CSK holes print as upward cones; magnet through-hole |
+| [turntable](../renders/parts/turntable.png) | [turntable.stl](../cad/stl/turntable.stl) | 1 | PETG | 0.15 | 4 | 40 % | none | upside down (top face on bed) | 200T ring hub (GT2 belt glued teeth-out D-11) with a 0.6 mm seat lip; CSK holes print as upward cones (0.8 mm feather edge at the cone rim |
 | [shell_anchor](../renders/parts/shell_anchor.png) | [shell_anchor.stl](../cad/stl/shell_anchor.stl) | 4 | PETG | 0.2 | 4 | 40 % | none | upright | CSK M3 from below into the turntable; shell tab screwed from above (cap off) |
 | [rack_comb](../renders/parts/rack_comb.png) | [rack_comb.stl](../cad/stl/rack_comb.stl) | 2 | PLA | 0.12 | 2 on fins, 3 elsewhere | 100 % | none | lying on outer face fins vertical | fins 0.9 mm = documented exception to the 1.2 mm wall rule (D-01); pilot holes 3.3 deep keep 1.2 mm; both combs identical (one turned 180 deg) |
 | [rack_bottom_plate](../renders/parts/rack_bottom_plate.png) | [rack_bottom_plate.stl](../cad/stl/rack_bottom_plate.stl) | 1 | PLA | 0.2 | 3 | 100 % | none | flat | 1.2 mm; glued (CA) into the comb rebates |
@@ -94,12 +96,13 @@ printed part).
 | [rail_frame](../renders/parts/rail_frame.png) | [rail_frame.stl](../cad/stl/rail_frame.stl) | 1 | PETG | 0.2 | 4 | 40 % | none | lying on web outer face | rod bores Ø8.1 horizontal (small roofs); microswitch pocket |
 | [loader_frame](../renders/parts/loader_frame.png) | [loader_frame.stl](../cad/stl/loader_frame.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | upright bottom lip on bed | ledges / IR block / tabs have 45 deg under-chamfers; N20 cradle is an open trough; harness windows bridge 16-18 mm |
 | [hopper_body](../renders/parts/hopper_body.png) | [hopper_body.stl](../cad/stl/hopper_body.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | upright floor on bed | load plane = floor top = Z_LOAD; slotted gate fixings; open U-slot for the pinch shaft |
-| [hopper_gate](../renders/parts/hopper_gate.png) | [hopper_gate.stl](../cad/stl/hopper_gate.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | lying on its front face | sets the 0.45 mm throat; holds the driven pinch rollers + 2 springs + load IR emitter (D-18); roller-cavity roofs bridge 8.6 mm |
+| [hopper_gate](../renders/parts/hopper_gate.png) | [hopper_gate.stl](../cad/stl/hopper_gate.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | lying on its front face | sets the 0.45 mm throat (reprint to change); bearing for the gear-driven pinch shaft + load IR emitter (D-18); roller-cavity roofs bridge 8.6 mm |
 | [hopper_weight](../renders/parts/hopper_weight.png) | [hopper_weight.stl](../cad/stl/hopper_weight.stl) | 1 | PETG 100% infill | 0.2 | 3 | 100 % | none | flat | 2 hex pockets for M8 nuts as ballast |
 | [hopper_lid](../renders/parts/hopper_lid.png) | [hopper_lid.stl](../cad/stl/hopper_lid.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | flat top face on bed | drops into the top cap; through finger slot |
 | [loader_coupler](../renders/parts/loader_coupler.png) | [loader_coupler.stl](../cad/stl/loader_coupler.stl) | 1 | PETG | 0.2 | 3 | 40 % | none | upright | N20 D-shaft to 3 mm shaft; 2x M3 grubs self-tapped |
-| [loader_pulley_feed](../renders/parts/loader_pulley_feed.png) | [loader_pulley_feed.stl](../cad/stl/loader_pulley_feed.stl) | 1 | PETG | 0.15 | 3 | 100 % | none | flat | O-ring pulley Ø12 groove on the feed shaft (D-18); 45 deg V groove |
-| [loader_pulley_pinch](../renders/parts/loader_pulley_pinch.png) | [loader_pulley_pinch.stl](../cad/stl/loader_pulley_pinch.stl) | 1 | PETG | 0.15 | 3 | 100 % | none | flat | O-ring pulley Ø5.8 groove on the pinch shaft (D-18) |
+| [loader_gear_feed](../renders/parts/loader_gear_feed.png) | [loader_gear_feed.stl](../cad/stl/loader_gear_feed.stl) | 1 | PETG | 0.15 | 3 | 100 % | none | flat | m0.5 43T spur gear on the feed shaft (D-18); pressed on |
+| [loader_gear_pinch](../renders/parts/loader_gear_pinch.png) | [loader_gear_pinch.stl](../cad/stl/loader_gear_pinch.stl) | 1 | PETG | 0.15 | 3 | 100 % | none | flat | m0.5 21T spur gear on the pinch shaft: one mesh reverses the pinch (D-18) |
+| [bearing_spacer](../renders/parts/bearing_spacer.png) | [bearing_spacer.stl](../cad/stl/bearing_spacer.stl) | 1 | PETG | 0.2 | 3 | 100 % | none | flat | 6 mm ring under the lazy susan: bearing-ID room for the ribbon clock spring (D-19) |
 | [pusher_guide](../renders/parts/pusher_guide.png) | [pusher_guide.stl](../cad/stl/pusher_guide.stl) | 1 | PETG | 0.2 | 3 | 20 % | none | upright (wing bottoms on bed) | blade-channel roof and floor are bridges <= 28 mm |
 | [pusher_slider](../renders/parts/pusher_slider.png) | [pusher_slider.stl](../cad/stl/pusher_slider.stl) | 1 | PETG | 0.15 | 3 | 100 % | none | upside down (flange on bed teeth up) | m1 gear rack (whole teeth only); blade fixed with 2x M2 |
 | [pusher_pinion](../renders/parts/pusher_pinion.png) | [pusher_pinion.stl](../cad/stl/pusher_pinion.stl) | 1 | PETG | 0.15 | 3 | 100 % | none | flat | m1 15T involute; pressed on the MG90S spline + horn screw |
@@ -142,8 +145,10 @@ the machine works.
    while it is warm. Do all inserts before any assembly.
 2. **Rods**: cut the two 8 mm rods to **157 mm**
    (hardened rods: score with a cut-off disc, then snap). Chamfer the ends so the LM8UU balls are not damaged.
-3. **Pusher blade**: cut the 0.5 mm stainless strip to the blade size in the CAD (24 mm wide). Deburr
-   the edges and round the corners: it must slide between cards without catching.
+3. **Pusher blade**: cut the 0.5 mm spring/stainless strip to **24 x 52.5 mm** (`BLADE_W` x `BLADE_L`
+   in `cad/params.scad`). Round the two tip corners (r 2 mm), drill two 2.4 mm holes for the M2 screws
+   7.5 mm from the back end at +/-7 mm from the centre line. Deburr all edges: it must slide between
+   cards without catching.
 4. **Turret ring**: the 200T ring is a printed hub with 400 mm of GT2 6 mm belt glued around it
    **teeth-out**. Dry-fit first: the belt must close exactly with the two ends butted at a tooth gap
    (trim if needed). Glue with CA in short sections, clamp with cable ties until cured, and check
@@ -151,12 +156,18 @@ the machine works.
 5. **Magnet**: the A3144 is unipolar and switches on a **south** pole facing its marked (flat) face.
    Mark the side of the magnet that makes the sensor switch (test with the sensor wired, LED or meter),
    then glue it into the turntable underside pocket with that side down.
-6. **Shafts, rollers, wheel**: cut the 3 mm silver-steel rod into the feed shaft (98.5 mm), the idler
-   axle (17.6 mm) and two idler pivot pins (5.7 mm); chamfer the ends. Press the two 14 mm feed rollers
-   onto the feed shaft, the 12 mm pinch idler onto its axle, and the 24 mm drive wheel onto the 130
-   motor shaft. Spin each one: they must run true.
+6. **Shafts, rollers, wheel**: cut the 3 mm silver-steel rod into 5 pieces: the **feed shaft (106 mm)**,
+   the **loader pinch shaft (84.5 mm)**, the launcher idler axle (17.6 mm) and two idler pivot pins
+   (5.7 mm); chamfer the ends (one 330 mm rod is enough). Press the two 14 x 8 mm feed rollers and the
+   43T gear (**loader_gear_feed**) onto the feed shaft, the two **7 x 6 mm pinch rollers** and the 21T
+   gear (**loader_gear_pinch**) onto the pinch shaft (DECISIONS D-18 rev.), the 12 x 12 mm
+   launcher idler onto its axle, and the 24 x 10 mm drive wheel onto the 130 motor shaft. Positions:
+   see `renders/section_detail_stations.png` and step 12 of section 5. Spin each one: they must run true.
 
 ## 5. Mechanical assembly
+
+Finished size: **199.0 mm diameter x 213.5 mm high** (measured from the CAD, [renders/size_report.md](../renders/size_report.md)).
+The 6 mm bearing spacer (D-19 rev.) is included in that height.
 
 Follow the order below. Part names are the STL names in `cad/stl/`. Pictures: the full assembly
 views, the exploded view (stack order) and the section view through rack, pusher and launcher
@@ -182,13 +193,16 @@ on its hub, pancake NEMA17 with its pulley, ESP32 and drivers in the crescents, 
 4. **base_deck** (inserts done): pancake NEMA17 on its standoffs with the GT2 20T pulley (flange
    removed, set screw on the shaft flat). **hall_post** pegs into the deck (r 29.5, clear of the ribbon
    coil) with the A3144 glued in its groove, marked face up. **spool_hub** pegs into the deck at the centre.
-5. **Clock-spring harness, base end** (DECISIONS D-19, section 6 step 9): prepare the 20-way
-   ribbon (about 400 mm). Lay its inner end along the radial slot in the deck, flat on top of the battery,
-   and down over the notch in the cradle wall into the -Y crescent to the ESP32 / driver board. Wind
-   **3 loose turns** around the spool_hub; 3 turns allow the full 0-360 degree turret range in either
-   winding direction. Screw the deck to
-   the base shell without pinching the ribbon.
-6. **Lazy susan** on the deck (M3 into inserts). The ribbon coil sits inside its ID.
+5. **Clock-spring harness, base end** (DECISIONS D-19 rev., section 6 step 9): cut the two 10-way
+   1.27 mm ribbons to about 450 mm and lay them flat on each other (ribbon A = power, ribbon B =
+   signals; mark conductor 1 of each). Run the inner end flat along the 14 mm radial slot in the deck, over
+   the battery, and down over the notch in the cradle wall into the -Y crescent to the ESP32 / driver
+   board. Wind the pair **on edge** (standing up, like a clock spring) around the **spool_hub** with
+   **340 mm of active length** between the hub (r 9.5) and the coil wall (r 22): that is about 1.33
+   turns = 478 degrees of capacity for the 385 degree turret range; the rest of the 450 mm is tails. Screw the deck to the base
+   shell without pinching the ribbons.
+6. **bearing_spacer** (6 mm ring) on the deck, then the **lazy susan** on top (M3 into inserts). The
+   spacer gives the coil its 15.5 mm of height inside the bearing ID.
 
 **Turret**
 
@@ -197,11 +211,15 @@ on its hub, pancake NEMA17 with its pulley, ESP32 and drivers in the crescents, 
 *`renders/exploded.png`: stack order from the base (bottom) to the top cap.*
 
 7. **turntable**: glue the GT2 belt teeth-out around the ring hub (section 4) and the magnet into its
-   pocket. Pass the **outer end of the ribbon** up through the 16 mm hole in the turntable (at the loader
+   pocket. Pass the **outer end of the ribbon pair** up through the 18 mm hole in the turntable (at the loader
    side), then screw the turntable to the lazy susan's upper race (M3x8 CSK). The belt ring must mesh
    with the pulley with almost no backlash: the motor standoffs have slots, push the motor in until
-   there is no play, back off a hair, tighten. Turn the turret by hand through 360 degrees in both
-   directions: no tight spots, and the ribbon coil winds and unwinds without catching.
+   there is no play, back off a hair, tighten. **Set the clock spring to half wound at mid-range**: turn
+   the turret to about +167.5 degrees (clockwise from the 0 degree hall mark, roughly opposite the board),
+   then adjust the coil so it is half wound (equal free turns towards the hub and towards the wall) and
+   fix the outer end at the turntable hole. The firmware's worst-case range is -25 to +360 degrees
+   (385 degrees); the coil allows about 478. Now turn the turret by hand to both ends of that range: no
+   tight spots, the coil never wraps tight on the hub or presses hard against the wall.
 8. **shell_anchor** x4 on the turntable rim (M3 CSK from below into each anchor) (`renders/harness_route.png`).
 9. **Rack**: glue (CA) the **rack_bottom_plate** and **rack_top_plate** into the rebates of the two
    **rack_comb**s (identical, one turned 180 degrees). Check a card slides into every slot. Screw the
@@ -221,22 +239,23 @@ on its hub, pancake NEMA17 with its pulley, ESP32 and drivers in the crescents, 
     90 degrees (a servo tester, or `servo 90` on the console after the first homing) before pressing the **pusher_pinion** onto the
     spline (+ horn screw). Fix the steel blade to the **pusher_slider** (2x M2) and slide it into the
     guide, teeth meshing the pinion. The blade must slide freely and pass between two fins.
-12. (`renders/assembly_open_top.png`, `section_detail_stations.png`) **Loader** (DECISIONS D-18):
+12. (`renders/assembly_open_top.png`, `section_detail_stations.png`) **Loader** (DECISIONS D-18 rev.):
     N20 in the **loader_frame** cradle, **loader_coupler** (2x M3 grub) to the 106 mm feed shaft with the
-    two 14 mm feed rollers and the **loader_pulley_feed**. In the **hopper_gate**: the 84.5 mm pinch shaft
-    with the two 7 mm pinch rollers and the **loader_pulley_pinch**, floating in its vertical slots and held
-    down by the two 0.4 mm-wire springs; the loader IR emitter in its pocket. Fit the O-ring belt over
-    both pulleys (-X side). Mount **hopper_body** and the gate, set the gate to the 0.45 mm throat (one
-    card passes, two do not: use a 0.45 mm feeler, slotted holes give +/-1.5 mm), receiver opposite the
-    emitter. **hopper_weight** with 2 M8 nuts, and the **hopper_lid**. Turning the feed shaft by hand must
-    turn the pinch rollers too.
+    two 14 mm feed rollers and the 43T **loader_gear_feed**. The 84.5 mm pinch shaft with the two 7 mm
+    pinch rollers and the 21T **loader_gear_pinch** runs in the bore of the **hopper_gate** and the bearing
+    hole in the hopper wall (fixed, no springs); the two gears mesh on the -X side. The loader IR emitter
+    goes in its gate pocket. Mount **hopper_body** and the gate. The gate is fixed: check the throat with
+    a 0.45 mm feeler (one card passes, two do not). To change the throat, change `THROAT` in params.scad
+    and reprint the gate. Receiver opposite the emitter. **hopper_weight** with 2 M8 nuts, and the
+    **hopper_lid**. Turn the feed shaft by hand: the pinch rollers must turn the **opposite** way, so the
+    top of the feed rollers and the bottom of the pinch rollers both move towards the rack.
 13. (`renders/section_rack_pusher_launcher.png`) **Launcher**: 130 motor with the 24 mm drive wheel in
     the **launcher_frame**, **launcher_floor** (entry floor at the eject station height) with the
     **idler_arm** on its pivot pins, the 12 mm pinch idler on its axle and the 0.6 mm-wire spring for
     preload. Exit IR receiver in the floor's cup, emitter opposite. Screw the **slot_panel** through the
     launcher side plates (2x M3 into its inserts): it closes the shell under the exit slot.
-14. **Turret harness, turret end**: the ribbon's outer end comes up inside the loader_frame box. Split it
-    as listed in section 6 and route the branches through the box's two wall windows: -X to the rack
+14. **Turret harness, turret end**: the ribbons' outer end comes up inside the loader_frame box. Split them
+    as listed in section 6 step 9 and route the branches through the box's two wall windows: -X to the rack
     NEMA, +X along the rail frame to the microswitch, then forward between the rail frame and the shell
     to the launcher. Loader, pusher and load-IR wires stay inside the box. Leave a little slack at every
     moving part (the rack moves 81 mm; the rack stepper and the microswitch do not move with it).
@@ -295,29 +314,33 @@ zooms better). The pin table is in [electronics/PINS.md](../electronics/PINS.md)
 8. **Battery sense divider**: 100 k from the switched 12 V bus to the mid point, 22 k from the mid point
    to GND, 100 nF from the mid point to GND, mid point to GPIO34. Check with a meter: the mid point is
    ~0.18 x battery voltage (2.0-2.3 V). **Never more than 3.3 V.**
-9. **Turret harness (ribbon clock spring, D-19)**: every wire between the base and the turret is a
-    conductor of the 20-way 1.27 mm ribbon (AWG28, about 1 A per conductor). Allocation (conductor 1 =
-    red-striped edge):
+9. **Turret harness (ribbon clock spring, D-19 rev.)**: every wire between the base and the turret is a
+    conductor of one of the two 10-way 1.27 mm ribbons (AWG28, about 1 A per conductor). Paralleled
+    conductors are joined at both ends (shown as loops on the HARN_* connectors in the wiring diagram).
+    Conductor 1 = the marked (red-striped) edge.
 
-    | Conductors | Signal | Base end | Turret end |
-    |---|---|---|---|
-    | 1-2 | rack coil A1 (2 in parallel) | TMC2209 rack A1 | rack NEMA A+ |
-    | 3-4 | rack coil A2 | TMC2209 rack A2 | rack NEMA A- |
-    | 5-6 | rack coil B1 | TMC2209 rack B1 | rack NEMA B+ |
-    | 7-8 | rack coil B2 | TMC2209 rack B2 | rack NEMA B- |
-    | 9-10 | launcher M+ (2 in parallel) | DRV8833 BOUT1 | 130 motor + |
-    | 11-12 | launcher M- | DRV8833 BOUT2 | 130 motor - |
-    | 13 | loader M+ | DRV8833 AOUT1 | N20 + |
-    | 14 | loader M- | DRV8833 AOUT2 | N20 - |
-    | 15 | +5 V | 5 V bus | servo V+, both IR emitters and receivers VCC |
-    | 16 | GND | GND | servo GND, IR GND (4), microswitch COM |
-    | 17 | PUSHER | GPIO23 | servo signal |
-    | 18 | IR_LOAD | GPIO15 | loader IR receiver OUT |
-    | 19 | IR_EXIT | GPIO4 | launcher IR receiver OUT |
-    | 20 | HOME_RACK | GPIO17 | microswitch NO |
+    | Ribbon | Conductors | Signal | Base end | Turret end |
+    |---|---|---|---|---|
+    | A | 1-2 | rack coil A1 (2 in parallel) | TMC2209 rack A1 | rack NEMA A+ |
+    | A | 3-4 | rack coil A2 | TMC2209 rack A2 | rack NEMA A- |
+    | A | 5-6 | rack coil B1 | TMC2209 rack B1 | rack NEMA B+ |
+    | A | 7-8 | rack coil B2 | TMC2209 rack B2 | rack NEMA B- |
+    | A | 9 | launcher M+ | DRV8833 BOUT1 | 130 motor + |
+    | A | 10 | launcher M- | DRV8833 BOUT2 | 130 motor - |
+    | B | 1-2 | +5 V (2 in parallel) | 5 V bus | servo V+, IR emitters + receivers VCC |
+    | B | 3-4 | GND (2 in parallel) | GND | servo GND, IR GND, microswitch COM |
+    | B | 5 | loader M+ | DRV8833 AOUT1 | N20 + |
+    | B | 6 | loader M- | DRV8833 AOUT2 | N20 - |
+    | B | 7 | PUSHER | GPIO23 | servo signal |
+    | B | 8 | IR_LOAD | GPIO15 | loader IR receiver OUT |
+    | B | 9 | IR_EXIT | GPIO4 | launcher IR receiver OUT |
+    | B | 10 | HOME_RACK | GPIO17 | microswitch NO |
 
-    Solder or crimp (IDC) at both ends, keep the ribbon flat in the coil, and do not twist it. The pancake
-    turret NEMA and the hall sensor are in the base and do not use the ribbon.
+    Current per conductor stays at or below 0.5 A. The exception is the 130 motor pair: about 0.5 A
+    running and 1.5 A for under 100 ms at start-up, which the firmware ramp limits (`LAUNCH_RAMP_MS`); this
+    is within the short-term AWG28 rating. The noisy stepper and launcher lines are on ribbon A, the
+    signals on ribbon B. Solder or crimp (IDC) at both ends and do not twist the ribbons. The pancake
+    turret NEMA and the hall sensor are in the base and do not use the ribbons.
 10. Run `python3 tools/check_pins.py`: it confirms the firmware, the pin table and the diagram agree.
 
 Power budget: peak < 3 A at 12 V, about 14 h (realistically 7 h) of play per charge.
@@ -414,7 +437,9 @@ Finally `home`.
 
 ### 8.4 Rack home, eject zero and shelf pitch
 
-Homed position (rack on the microswitch) = shelf 51 (the top shelf) at the eject station:
+Homed position (rack on the microswitch, rack bottom at world z `RACK_Z_MIN` = 50.5 mm; eject plane
+`Z_EJECT` = 128.2 mm, load plane `Z_LOAD` = 132.7 mm, from geometry.h) = shelf 51 (the top shelf) at
+the eject station:
 `eject(i) = (51 - i) x pitch`, `load(i) = eject(i) + STATION_OFFSET` (3 pitches = 4.5 mm).
 
 1. **Eject zero**: `rack eject 51`. With the cap off, the top slot must line up with the pusher blade
@@ -458,8 +483,26 @@ and real cards with `deal seat <n>`, `deal board <k>` and `deal burn`.
   `BOARD_SPREAD_DEG` (4 degrees).
 * `LAUNCH_BURN` (default 55): burns are launched very slowly, face down, onto the **burn spot** on
   the table right next to the machine at `BURN_DEG` = 22 degrees (between the board fan and seat 0,
-  DECISIONS D-20). The card should just clear the base and land within a few cm of it. Too low and it
-  stalls in the nip (launcher jam); too high and it slides into the board or seat 0.
+  DECISIONS D-20). Too low and the card stalls in the nip or stays in the exit slot (launcher jam); too
+  high and it lands on the board.
+
+**Burn / board acceptance test (pass/fail, unverified until the first prototype).** The burn spot is
+only 6 degrees from board slot 4 (about 16 mm sideways at the landing radius, less than a card width), so
+burns and board cards must be separated **radially**: burns drop right next to the base, the board lands
+further out. With a full rack, run `deal burn` 10 times, then `deal board 0` ... `deal board 4` twice:
+
+| # | Check | Pass |
+|---|---|---|
+| B1 | Every burn card fully clears the exit slot (nothing left in the slot or the nip) | 10 / 10 |
+| B2 | Every burn lands face down | 10 / 10 |
+| B3 | Burns land in a pile within ~60 mm of the base wall | 10 / 10 |
+| B4 | The nearest edge of every board card is at least **70 mm** (one card length) beyond the far edge of the burn pile | 10 / 10 |
+| B5 | No board card touches or moves the burn pile | 10 / 10 |
+
+Tune `LAUNCH_BURN` up only as far as B1 needs (if B1 needs so much speed that B3 fails, the burn needs a
+short kick: ask for / enable the firmware burn kick, see FIRMWARE.md), then raise `LAUNCH_BOARD` until B4
+passes, and re-run all five. Record the final values in config.h. If B4 cannot pass without board cards
+sliding off the table edge, see Known issues in the README.
 * `SPINUP_MS` (default 250): wait after a speed change. Increase it if the first card of a street is short.
 
 A lower battery voltage gives a shorter throw; calibrate at about 11.5 V.
@@ -521,7 +564,7 @@ dealing it is safest to collect all cards and start a new hand (misdeal: SET lon
 <!-- RENDER_INDEX: renders/ as of the final export -->
 | Render | Shows |
 |---|---|
-| [assembly_front_exterior.png](../renders/assembly_front_exterior.png) | finished machine, exit-slot side (card exit slot, slot panel) |
+| [assembly_front_exterior.png](../renders/assembly_front_exterior.png) | finished machine, exit-slot side (card exit slot, fixed slot panel below it) |
 | [assembly_back_ui.png](../renders/assembly_back_ui.png) | finished machine, UI side: OLED, GO, SET, LED bezel on the base |
 | [assembly_base_power.png](../renders/assembly_base_power.png) | base back wall: rocker switch and DC charge jack |
 | [assembly_top_closed.png](../renders/assembly_top_closed.png) | closed, from above: top cap and hopper loading lid |
@@ -530,7 +573,7 @@ dealing it is safest to collect all cards and start a new hand (misdeal: SET lon
 | [assembly_open_top.png](../renders/assembly_open_top.png) | shell removed, top view, rack at the top of its travel |
 | [harness_route.png](../renders/harness_route.png) | turret harness route and shell anchors on the turntable (D-19) |
 | [exploded.png](../renders/exploded.png) | exploded view, assembly order |
-| [section_rack_pusher_launcher.png](../renders/section_rack_pusher_launcher.png) | section at X=0 through rack, pusher and launcher (card path), rack at 30 mm |
+| [section_rack_pusher_launcher.png](../renders/section_rack_pusher_launcher.png) | section at X=0 through rack, pusher and launcher (card path) |
 | [section_detail_stations.png](../renders/section_detail_stations.png) | close-up: hopper throat with the pinch rollers, rack shelves and launcher nip |
 | [section_rack_top.png](../renders/section_rack_top.png) | same section with the rack at the top of its travel (81 mm) |
 | [base_electronics.png](../renders/base_electronics.png) | base with deck and bearing hidden: battery, ribbon clock spring and hub, pancake NEMA17, ESP32, drivers, UI |
@@ -538,5 +581,5 @@ dealing it is safest to collect all cards and start a new hand (misdeal: SET lon
 
 Printed parts, one render each (same names as the STLs):
 
-[base_shell](../renders/parts/base_shell.png) [battery_door](../renders/parts/battery_door.png) [base_deck](../renders/parts/base_deck.png) [hall_post](../renders/parts/hall_post.png) [spool_hub](../renders/parts/spool_hub.png) [ui_bezel](../renders/parts/ui_bezel.png) [turntable](../renders/parts/turntable.png) [shell_anchor](../renders/parts/shell_anchor.png) [rack_comb](../renders/parts/rack_comb.png) [rack_bottom_plate](../renders/parts/rack_bottom_plate.png) [rack_top_plate](../renders/parts/rack_top_plate.png) [rack_carriage](../renders/parts/rack_carriage.png) [rack_nut_arm](../renders/parts/rack_nut_arm.png) [rack_motor_mount](../renders/parts/rack_motor_mount.png) [rail_frame](../renders/parts/rail_frame.png) [loader_frame](../renders/parts/loader_frame.png) [hopper_body](../renders/parts/hopper_body.png) [hopper_gate](../renders/parts/hopper_gate.png) [hopper_weight](../renders/parts/hopper_weight.png) [hopper_lid](../renders/parts/hopper_lid.png) [loader_coupler](../renders/parts/loader_coupler.png) [loader_pulley_feed](../renders/parts/loader_pulley_feed.png) [loader_pulley_pinch](../renders/parts/loader_pulley_pinch.png) [pusher_guide](../renders/parts/pusher_guide.png) [pusher_slider](../renders/parts/pusher_slider.png) [pusher_pinion](../renders/parts/pusher_pinion.png) [servo_mount](../renders/parts/servo_mount.png) [launcher_frame](../renders/parts/launcher_frame.png) [launcher_floor](../renders/parts/launcher_floor.png) [idler_arm](../renders/parts/idler_arm.png) [slot_panel](../renders/parts/slot_panel.png) [turret_shell](../renders/parts/turret_shell.png) [top_cap](../renders/parts/top_cap.png)
+[base_shell](../renders/parts/base_shell.png) [battery_door](../renders/parts/battery_door.png) [base_deck](../renders/parts/base_deck.png) [hall_post](../renders/parts/hall_post.png) [spool_hub](../renders/parts/spool_hub.png) [ui_bezel](../renders/parts/ui_bezel.png) [turntable](../renders/parts/turntable.png) [shell_anchor](../renders/parts/shell_anchor.png) [rack_comb](../renders/parts/rack_comb.png) [rack_bottom_plate](../renders/parts/rack_bottom_plate.png) [rack_top_plate](../renders/parts/rack_top_plate.png) [rack_carriage](../renders/parts/rack_carriage.png) [rack_nut_arm](../renders/parts/rack_nut_arm.png) [rack_motor_mount](../renders/parts/rack_motor_mount.png) [rail_frame](../renders/parts/rail_frame.png) [loader_frame](../renders/parts/loader_frame.png) [hopper_body](../renders/parts/hopper_body.png) [hopper_gate](../renders/parts/hopper_gate.png) [hopper_weight](../renders/parts/hopper_weight.png) [hopper_lid](../renders/parts/hopper_lid.png) [loader_coupler](../renders/parts/loader_coupler.png) [loader_gear_feed](../renders/parts/loader_gear_feed.png) [loader_gear_pinch](../renders/parts/loader_gear_pinch.png) [bearing_spacer](../renders/parts/bearing_spacer.png) [pusher_guide](../renders/parts/pusher_guide.png) [pusher_slider](../renders/parts/pusher_slider.png) [pusher_pinion](../renders/parts/pusher_pinion.png) [servo_mount](../renders/parts/servo_mount.png) [launcher_frame](../renders/parts/launcher_frame.png) [launcher_floor](../renders/parts/launcher_floor.png) [idler_arm](../renders/parts/idler_arm.png) [slot_panel](../renders/parts/slot_panel.png) [turret_shell](../renders/parts/turret_shell.png) [top_cap](../renders/parts/top_cap.png)
 <!-- /RENDER_INDEX -->

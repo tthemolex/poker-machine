@@ -1,16 +1,16 @@
 {
   "footprint_d": 199.0,
   "max_radius": 99.5,
-  "height": 207.5,
+  "height": 213.5,
   "max_bbox_xy": 199.0,
   "limit_d": 200.0,
   "limit_h": 220.0,
   "stretch_d": 170.0,
   "stretch_h": 180.0,
   "gap_to_stretch_d": 29.0,
-  "gap_to_stretch_h": 27.5,
+  "gap_to_stretch_h": 33.5,
   "margin_d": 1.0,
-  "margin_h": 12.5,
+  "margin_h": 6.5,
   "pass_hard": true,
   "angles": [
     0,
@@ -63,27 +63,27 @@
   "drivers_height": [
     [
       "top_cap",
-      207.5
+      213.5
     ],
     [
       "hopper_lid",
-      207.5
+      213.5
     ],
     [
       "rack_comb_px",
-      205.0
+      211.0
     ],
     [
       "rack_comb_nx",
-      205.0
+      211.0
     ],
     [
       "rack_top_plate",
-      205.0
+      211.0
     ],
     [
       "rail_frame",
-      205.0
+      211.0
     ]
   ]
 }

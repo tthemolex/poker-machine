@@ -19,7 +19,7 @@ module launcher_floor() difference() {
     for (s = [-1, 1]) translate([s * (LF_XI - GAP), LFL_INS[0], e + LFL_INS[1]]) rotate([0, -s * 90, 0]) insert_hole();
     translate([0, IDL_P[0], e + IDL_P[1]]) rotate([0, 90, 0]) cylinder(d = fit_free(SHAFT_D), h = 25, center = true);
     translate([EXITIR_X, EXITIR_Y, e - 11]) { cylinder(d = fit_slide(3.8), h = 9.5); cylinder(d = fit_free(3), h = 20); }   // 1.5 mm roof over the receiver
-    translate([EXITIR_X, EXITIR_Y, e - 11]) box_at(-1, 1, -0.5, 0.5, 0, 4);
+    translate([EXITIR_X, EXITIR_Y, e - 11]) box_at(-1, 1, -0.5, 0.5, 0, 4);   // geom
 }
 module launcher_floor_print() translate([0, 0, e]) rotate([180, 0, 0]) launcher_floor();
 launcher_floor_print();

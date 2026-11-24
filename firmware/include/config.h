@@ -85,6 +85,11 @@ constexpr uint8_t LAUNCH_SEAT = 255;   // full throw to a player
 constexpr uint8_t LAUNCH_BOARD = 110;  // short throw to the board next to the machine
 constexpr uint8_t LAUNCH_BURN = 55;    // very low throw onto the burn spot (geom::BURN_DEG)
 constexpr uint8_t LAUNCH_PURGE = LAUNCH_BOARD;  // purge / double-feed clearing to the burn spot
+// Burn kick: once the burn card's tail passes IR_EXIT (still in the nip), run the
+// wheel at LAUNCH_BURN_KICK for BURN_KICK_MS so the card clears the exit lip.
+// LAUNCH_BURN_KICK <= LAUNCH_BURN disables the kick.
+constexpr uint8_t LAUNCH_BURN_KICK = 110;
+constexpr uint32_t BURN_KICK_MS = 200;
 constexpr uint32_t SPINUP_MS = 250;    // settle time after a launcher speed change
 constexpr uint32_t LAUNCH_RAMP_MS = 120;  // soft PWM ramp on spin-up (limits the DRV8833 inrush)
 constexpr uint32_t MOTOR_PWM_HZ = 20000;  // DRV8833 PWM frequency (inaudible)
@@ -123,14 +128,15 @@ constexpr float VBAT_RATIO = (VBAT_R_TOP_K + VBAT_R_BOT_K) / VBAT_R_BOT_K;
 constexpr float VBAT_WARN = 10.9f;      // warn (~15 % left)
 constexpr float VBAT_MIN = 10.5f;       // refuse to start a hand below this
 constexpr float VBAT_ABSENT = 3.0f;     // below this: no battery (USB only), motors unpowered
+constexpr float VBAT_MAX_PLAUSIBLE = 14.0f;  // 3S full is 12.6 V: above this = sensor fault
+constexpr float VBAT_MAX_JUMP = 1.0f;   // change between consecutive idle reads above this = fault
 constexpr float VBAT_CAL = 1.0f;        // multiply reading by this to match a multimeter
 constexpr uint8_t VBAT_SAMPLES = 16;
 
 // ---------------- RNG ----------------
-// Enable the SAR-ADC entropy source (bootloader_random_enable) while dealing, so
-// esp_random() is a true RNG with the radios off. It shares the SAR ADC with the
-// battery sense on GPIO34, so it is switched off again before any ADC read.
-constexpr bool HW_ENTROPY_DURING_DEAL = true;
+// 32-bit words of true entropy collected at boot (bootloader_random_enable, before
+// any ADC use) to seed xoshiro256**. 16 words = 512 bits (>= 256 required).
+constexpr uint8_t RNG_SEED_WORDS = 16;
 
 // ---------------- Serial console ----------------
 constexpr uint32_t CONSOLE_IDLE_MS = 60000;  // power down after this long without a command

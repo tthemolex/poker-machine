@@ -12,8 +12,9 @@
 #         3V3 = ESP32 on-board regulator (logic only: OLED, TMC VIO/MS, button/endstop GND bus).
 #  All grounds are common (battery -, buck -, ESP32 GND, driver GND).
 #  Location: base = static puck under the turret; turret = rotating part. Every base<->turret
-#  wire is one conductor of the 20-way 1.27 mm ribbon clock spring in the bearing ID (D-19);
-#  conductor allocation: docs/BUILD.md section 6 (turret moves 0..360 deg only).
+#  wire is a conductor of the two 10-way 1.27 mm ribbons (RIBBON_A, RIBBON_B) wound together on
+#  edge as one clock spring in the bearing ID (D-19). Paralleled conductors are shown as `loops`
+#  on the HARN_* connectors. Turret moves 0..360 deg only.
 # =============================================================================
 
 metadata:
@@ -204,6 +205,30 @@ connectors:
     subtype: 128x64 I2C 0x3C, 3.3 V, base wall (optional)
     pinlabels: [GND, VCC, SCL, SDA]
 
+  # ---------------------------------------------------------------- turret harness (D-19)
+  HARN_A_BASE:
+    type: Ribbon A, base end
+    subtype: 10-way 1.27 mm (solder / IDC), power ribbon
+    pinlabels: [A1a, A1b, A2a, A2b, B1a, B1b, B2a, B2b, M130+, M130-]
+    loops: [[1, 2], [3, 4], [5, 6], [7, 8]]
+    notes: rack stepper coils on 2 conductors each (AWG28 ~1 A per conductor)
+  HARN_A_TUR:
+    type: Ribbon A, turret end
+    subtype: 10-way 1.27 mm (solder / IDC), in the loader-frame box
+    pinlabels: [A1a, A1b, A2a, A2b, B1a, B1b, B2a, B2b, M130+, M130-]
+    loops: [[1, 2], [3, 4], [5, 6], [7, 8]]
+  HARN_B_BASE:
+    type: Ribbon B, base end
+    subtype: 10-way 1.27 mm (solder / IDC), signal ribbon
+    pinlabels: [5Va, 5Vb, GNDa, GNDb, N20+, N20-, PUSHER, IR_LOAD, IR_EXIT, HOME_RACK]
+    loops: [[1, 2], [3, 4]]
+    notes: +5V and GND on 2 conductors each
+  HARN_B_TUR:
+    type: Ribbon B, turret end
+    subtype: 10-way 1.27 mm (solder / IDC), in the loader-frame box
+    pinlabels: [5Va, 5Vb, GNDa, GNDb, N20+, N20-, PUSHER, IR_LOAD, IR_EXIT, HOME_RACK]
+    loops: [[1, 2], [3, 4]]
+
 cables:
   # ------------------------------------------------------------- power
   W_CHG:
@@ -292,13 +317,6 @@ cables:
     colors: [BK, GN, RD, BU]
     length: 0.15
     notes: check coil pairs with a meter; swap one pair to reverse direction
-  W_COIL_RACK:
-    gauge: 0.25 mm2
-    show_equiv: false
-    wirecount: 4
-    colors: [BK, GN, RD, BU]
-    length: 0.35
-    notes: turret, via the ribbon clock spring (D-19)
 
   # ------------------------------------------------------------- DC motors + servo
   W_DRV:
@@ -307,65 +325,14 @@ cables:
     colors: [WH, GY, BU]
     wirelabels: [FEED_IN1, FEED_IN2, LAUNCH]
     length: 0.08
-  W_N20:
-    gauge: 0.25 mm2
-    show_equiv: false
-    wirecount: 2
-    colors: [RD, BK]
-    length: 0.35
-    notes: turret, via the ribbon clock spring (D-19)
-  W_130:
-    gauge: 0.25 mm2
-    show_equiv: false
-    wirecount: 2
-    colors: [RD, BK]
-    length: 0.35
-    notes: turret, via the ribbon clock spring (D-19)
-  W_SERVO:
-    <<: *sig
-    wirecount: 3
-    colors: [OG, RD, BN]
-    wirelabels: [PUSHER, 5V, GND]
-    length: 0.35
-    notes: turret, via the ribbon clock spring (D-19)
 
   # ------------------------------------------------------------- sensors
-  W_IR_LOAD:
-    <<: *sig
-    wirecount: 3
-    colors: [WH, RD, BK]
-    wirelabels: [IR_LOAD, 5V, GND]
-    length: 0.35
-  W_IRTX_LOAD:
-    <<: *sig
-    wirecount: 2
-    colors: [RD, BK]
-    wirelabels: [5V, GND]
-    length: 0.35
-  W_IR_EXIT:
-    <<: *sig
-    wirecount: 3
-    colors: [WH, RD, BK]
-    wirelabels: [IR_EXIT, 5V, GND]
-    length: 0.35
-  W_IRTX_EXIT:
-    <<: *sig
-    wirecount: 2
-    colors: [RD, BK]
-    wirelabels: [5V, GND]
-    length: 0.35
   W_HALL:
     <<: *sig
     wirecount: 3
     colors: [WH, RD, BK]
     wirelabels: [HOME_TURN, 5V, GND]
     length: 0.1
-  W_ENDSTOP:
-    <<: *sig
-    wirecount: 2
-    colors: [WH, BK]
-    wirelabels: [HOME_RACK, GND]
-    length: 0.35
 
   # ------------------------------------------------------------- UI
   W_BTN_GO:
@@ -402,6 +369,112 @@ cables:
     colors: [BU, GN, YE, BK]
     wirelabels: [OLED_SDA, OLED_SCL, 3V3, GND]
     length: 0.12
+
+  # ------------------------------------------------------------- turret harness (D-19)
+  RIBBON_A:
+    gauge: 0.08 mm2
+    show_equiv: false
+    wirecount: 10
+    color_code: DIN
+    wirelabels: [A1, A1, A2, A2, B1, B1, B2, B2, M130+, M130-]
+    length: 0.45
+    notes: 10-way 1.27 mm flat ribbon (AWG28), clock spring on edge together with RIBBON_B
+  RIBBON_B:
+    gauge: 0.08 mm2
+    show_equiv: false
+    wirecount: 10
+    color_code: DIN
+    wirelabels: [5V, 5V, GND, GND, N20+, N20-, PUSHER, IR_LOAD, IR_EXIT, HOME_RACK]
+    length: 0.45
+    notes: 10-way 1.27 mm flat ribbon (AWG28), clock spring on edge together with RIBBON_A
+  W_COIL_RACK_BASE:
+    gauge: 0.25 mm2
+    show_equiv: false
+    wirecount: 4
+    colors: [BK, GN, RD, BU]
+    length: 0.1
+    notes: TMC2209 rack outputs to ribbon A (each lead to 2 paralleled conductors)
+  W_COIL_RACK:
+    gauge: 0.25 mm2
+    show_equiv: false
+    wirecount: 4
+    colors: [BK, GN, RD, BU]
+    length: 0.1
+    notes: motor leads, turret side; check coil pairs with a meter
+  W_130_BASE:
+    gauge: 0.25 mm2
+    show_equiv: false
+    wirecount: 2
+    colors: [RD, BK]
+    length: 0.08
+  W_130:
+    gauge: 0.25 mm2
+    show_equiv: false
+    wirecount: 2
+    colors: [RD, BK]
+    length: 0.1
+    notes: turret side
+  W_HARN_PWR:
+    <<: *pwr
+    wirecount: 2
+    colors: [OG, BK]
+    length: 0.1
+    notes: 5 V bus to ribbon B (each lead to 2 paralleled conductors)
+  W_N20_BASE:
+    <<: *sig
+    wirecount: 2
+    colors: [RD, BK]
+    length: 0.08
+  W_N20:
+    <<: *sig
+    wirecount: 2
+    colors: [RD, BK]
+    length: 0.1
+    notes: turret side
+  W_TURRET_SIG:
+    <<: *sig
+    wirecount: 4
+    colors: [OG, WH, GY, VT]
+    wirelabels: [PUSHER, IR_LOAD, IR_EXIT, HOME_RACK]
+    length: 0.1
+    notes: ESP32 to ribbon B
+  W_SERVO:
+    <<: *sig
+    wirecount: 3
+    colors: [OG, RD, BN]
+    wirelabels: [PUSHER, 5V, GND]
+    length: 0.15
+    notes: turret side (servo lead)
+  W_IR_LOAD:
+    <<: *sig
+    wirecount: 3
+    colors: [WH, RD, BK]
+    wirelabels: [IR_LOAD, 5V, GND]
+    length: 0.1
+  W_IRTX_LOAD:
+    <<: *sig
+    wirecount: 2
+    colors: [RD, BK]
+    wirelabels: [5V, GND]
+    length: 0.1
+  W_IR_EXIT:
+    <<: *sig
+    wirecount: 3
+    colors: [WH, RD, BK]
+    wirelabels: [IR_EXIT, 5V, GND]
+    length: 0.2
+  W_IRTX_EXIT:
+    <<: *sig
+    wirecount: 2
+    colors: [RD, BK]
+    wirelabels: [5V, GND]
+    length: 0.2
+  W_ENDSTOP:
+    <<: *sig
+    wirecount: 2
+    colors: [WH, BK]
+    wirelabels: [HOME_RACK, GND]
+    length: 0.15
 
 connections:
   # ---- power path: battery -> switch -> 12V bus -> buck -> 5V bus -> ESP32 -> 3V3 bus
@@ -452,9 +525,6 @@ connections:
   - - TMC_TURN: [A1, A2, B1, B2]
     - W_COIL_TURN: [1-4]
     - M_TURN: [A+, A-, B+, B-]
-  - - TMC_RACK: [A1, A2, B1, B2]
-    - W_COIL_RACK: [1-4]
-    - M_RACK: [A+, A-, B+, B-]
 
   # ---- DRV8833 + DC motors
   - - ESP32: [GPIO32, GPIO33, GPIO19]
@@ -463,40 +533,8 @@ connections:
   - - PWR5: [+5V, GND, GND, +5V]
     - W_DRV_PWR: [1-4]
     - DRV: [VM, GND, BIN2, nSLEEP]
-  - - DRV: [AOUT1, AOUT2]
-    - W_N20: [1-2]
-    - N20: [M+, M-]
-  - - DRV: [BOUT1, BOUT2]
-    - W_130: [1-2]
-    - M130: [M+, M-]
 
-  # ---- pusher servo
-  - - ESP32: [GPIO23]
-    - W_SERVO: [1]
-    - SERVO: [SIG]
-  - - PWR5: [+5V, GND]
-    - W_SERVO: [2-3]
-    - SERVO: [V+, GND]
 
-  # ---- IR break-beams (all on 5V; receiver OUT is open-collector, pulled up to 3.3 V by the ESP32 only)
-  - - ESP32: [GPIO15]
-    - W_IR_LOAD: [1]
-    - IRRX_LOAD: [OUT]
-  - - PWR5: [+5V, GND]
-    - W_IR_LOAD: [2-3]
-    - IRRX_LOAD: [VCC, GND]
-  - - PWR5: [+5V, GND]
-    - W_IRTX_LOAD: [1-2]
-    - IRTX_LOAD: [VCC, GND]
-  - - ESP32: [GPIO4]
-    - W_IR_EXIT: [1]
-    - IRRX_EXIT: [OUT]
-  - - PWR5: [+5V, GND]
-    - W_IR_EXIT: [2-3]
-    - IRRX_EXIT: [VCC, GND]
-  - - PWR5: [+5V, GND]
-    - W_IRTX_EXIT: [1-2]
-    - IRTX_EXIT: [VCC, GND]
 
   # ---- homing
   - - ESP32: [GPIO16]
@@ -505,12 +543,6 @@ connections:
   - - PWR5: [+5V, GND]
     - W_HALL: [2-3]
     - HALL: [VCC, GND]
-  - - ESP32: [GPIO17]
-    - W_ENDSTOP: [1]
-    - ENDSTOP: ['NO']
-  - - BUS3V3: [GND]
-    - W_ENDSTOP: [2]
-    - ENDSTOP: [COM]
 
   # ---- UI
   - - ESP32: [GPIO18]
@@ -547,3 +579,55 @@ connections:
   - - BUS3V3: [3V3, GND]
     - W_OLED: [3-4]
     - OLED: [VCC, GND]
+
+  # ---- turret harness: base side
+  - - TMC_RACK: [A1, A2, B1, B2]
+    - W_COIL_RACK_BASE: [1-4]
+    - HARN_A_BASE: [1, 3, 5, 7]
+  - - DRV: [BOUT1, BOUT2]
+    - W_130_BASE: [1-2]
+    - HARN_A_BASE: [9, 10]
+  - - PWR5: [+5V, GND]
+    - W_HARN_PWR: [1-2]
+    - HARN_B_BASE: [1, 3]
+  - - DRV: [AOUT1, AOUT2]
+    - W_N20_BASE: [1-2]
+    - HARN_B_BASE: [5, 6]
+  - - ESP32: [GPIO23, GPIO15, GPIO4, GPIO17]
+    - W_TURRET_SIG: [1-4]
+    - HARN_B_BASE: [7, 8, 9, 10]
+  # ---- the two ribbons (clock spring)
+  - - HARN_A_BASE: [1-10]
+    - RIBBON_A: [1-10]
+    - HARN_A_TUR: [1-10]
+  - - HARN_B_BASE: [1-10]
+    - RIBBON_B: [1-10]
+    - HARN_B_TUR: [1-10]
+  # ---- turret harness: turret side
+  - - HARN_A_TUR: [1, 3, 5, 7]
+    - W_COIL_RACK: [1-4]
+    - M_RACK: [A+, A-, B+, B-]
+  - - HARN_A_TUR: [9, 10]
+    - W_130: [1-2]
+    - M130: [M+, M-]
+  - - HARN_B_TUR: [5, 6]
+    - W_N20: [1-2]
+    - N20: [M+, M-]
+  - - HARN_B_TUR: [7, 1, 3]
+    - W_SERVO: [1-3]
+    - SERVO: [SIG, V+, GND]
+  - - HARN_B_TUR: [8, 1, 3]
+    - W_IR_LOAD: [1-3]
+    - IRRX_LOAD: [OUT, VCC, GND]
+  - - HARN_B_TUR: [2, 4]
+    - W_IRTX_LOAD: [1-2]
+    - IRTX_LOAD: [VCC, GND]
+  - - HARN_B_TUR: [9, 2, 4]
+    - W_IR_EXIT: [1-3]
+    - IRRX_EXIT: [OUT, VCC, GND]
+  - - HARN_B_TUR: [2, 4]
+    - W_IRTX_EXIT: [1-2]
+    - IRTX_EXIT: [VCC, GND]
+  - - HARN_B_TUR: [10, 4]
+    - W_ENDSTOP: [1-2]
+    - ENDSTOP: ['NO', COM]

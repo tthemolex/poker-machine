@@ -1,4 +1,5 @@
 // Bounded turret homing search against a simulated turret.
+#include <math.h>
 #include <unity.h>
 
 #include "dealer_core.h"
@@ -23,7 +24,7 @@ struct Result {
   int slowSteps;
 };
 
-static const HomingParams kP{0, 300, 200, 100};  // window 300, zone max 200, backoff 100
+static const HomingParams kP{0, 300, 200, 100, 32000};  // window 300, zone max 200, backoff 100, full 32000
 
 static Result run(int32_t start, HomingParams p, int32_t zoneLo = -20, int32_t zoneHi = 20) {
   Sim s{start, zoneLo, zoneHi, start, start};
@@ -97,6 +98,40 @@ void test_starts_on_sensor_and_stuck_sensor() {
   TEST_ASSERT_FALSE(s.ok);
 }
 
+// Near the top of the range the positive window shrinks so the believed angle never
+// passes TURRET_MAX_DEG; at est = full there is no positive search at all.
+void test_positive_window_clamped_at_full_range() {
+  HomingParams p = kP;
+  p.estSteps = 31900;  // 100 steps below full
+  TurretHoming h(p);
+  TEST_ASSERT_EQUAL_INT32(100, h.searchMaxReach());
+  TEST_ASSERT_EQUAL_INT32(100 + 200 + 100, h.maxReach());
+  // magnet missing entirely: search fails without going past est + 100
+  Result r = run(31900, p, 900000, 900010);
+  TEST_ASSERT_FALSE(r.ok);
+  TEST_ASSERT_TRUE(r.maxAbs <= 31900 + 100);
+  TEST_ASSERT_TRUE(r.minAbs >= 31900 - (31900 + 300));
+  p.estSteps = 32000;
+  TEST_ASSERT_EQUAL_INT32(0, TurretHoming(p).searchMaxReach());
+  p.estSteps = 40000;  // counter beyond range (should not happen): still no + search
+  TEST_ASSERT_EQUAL_INT32(0, TurretHoming(p).searchMaxReach());
+}
+
+// With the firmware's real constants: parked (est 0) the turret stays within
+// -25 deg .. +45 deg of the start; worst case over all est the search phases stay
+// within [-25 deg, 360 deg] of the believed angle.
+void test_real_constants_reach() {
+  auto steps = [](float deg) { return static_cast<int32_t>(lroundf(deg * geom::TURRET_STEPS_PER_DEG)); };
+  const int32_t full = steps(geom::TURRET_MAX_DEG);
+  const int32_t win = steps(cfg::TURN_SEARCH_WINDOW_DEG);
+  for (int32_t estDeg = 0; estDeg <= 360; estDeg += 5) {
+    const int32_t est = steps(static_cast<float>(estDeg));
+    TurretHoming h({est, win, steps(cfg::TURN_ZONE_MAX_DEG), steps(cfg::TURN_BACKOFF_DEG), full});
+    TEST_ASSERT_TRUE(est + h.minReach() >= -win);
+    TEST_ASSERT_TRUE(est + h.searchMaxReach() <= full);
+  }
+}
+
 int main(int, char**) {
   UNITY_BEGIN();
   RUN_TEST(test_repeatable_zero_from_both_sides);
@@ -104,5 +139,7 @@ int main(int, char**) {
   RUN_TEST(test_fails_outside_window);
   RUN_TEST(test_estimate_extends_negative_search);
   RUN_TEST(test_starts_on_sensor_and_stuck_sensor);
+  RUN_TEST(test_positive_window_clamped_at_full_range);
+  RUN_TEST(test_real_constants_reach);
   return UNITY_END();
 }

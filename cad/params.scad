@@ -20,7 +20,7 @@ SHELF_FIN      = 0.9;   // @shared fin thickness (noted exception to 1.2 mm wall
 SHELF_GAP      = SHELF_PITCH - SHELF_FIN;   // @shared card slot height
 RACK_CAP       = 1.2;   // @shared bottom plate thickness below shelf 0 slot
 STATION_OFFSET = 3 * SHELF_PITCH;           // @shared load station above eject station
-RACK_Z_MIN     = 44.5;  // @shared world z of rack bottom when homed (microswitch)
+RACK_Z_MIN     = 50.5;  // @shared world z of rack bottom when homed (microswitch); +6 for the bearing spacer, D-19
 RACK_TRAVEL    = (SHELF_COUNT - 1) * SHELF_PITCH + STATION_OFFSET; // @shared mm
 // world z of the card-bottom plane at the eject station (shelf 51 is there when homed)
 Z_EJECT = RACK_Z_MIN + RACK_CAP + (SHELF_COUNT - 1) * SHELF_PITCH; // @shared
@@ -66,7 +66,8 @@ BATT_L = 145; BATT_W = 85; BATT_H = 28;     // TalentCell YB1206000-USB (maker m
 DECK_Z       = FLOOR_T + BATT_H + 0.4;      // underside of deck
 DECK_T       = 2.0;
 LS_OD = 120; LS_ID = 70; LS_H = 9.5;        // VXB 120 mm round lazy susan
-LS_Z         = DECK_Z + DECK_T;             // bearing bottom
+LS_SPACER    = 6.0;                         // printed ring under the lazy susan: room for the ribbon clock spring (D-19)
+LS_Z         = DECK_Z + DECK_T + LS_SPACER; // bearing bottom
 TURNTABLE_Z  = LS_Z + LS_H;                 // turntable underside
 TURNTABLE_T  = 2.5;
 // sanity: rack must clear the turntable
@@ -90,6 +91,7 @@ M2_PILOT_D = 1.8;                           // M2 self-tapping pilot
 M3_HEAD_CB = M3_HEAD_D + 2 * TOL;           // counterbore for M3 socket heads
 PEG_D = 2.5;                                // locating pegs (hall post, spool hub)
 GAP = TOL;                                  // sliding gap per side between printed parts
+BLADE_CLR = 0.75 * TOL;                     // pusher blade running clearance in its channel
 PI_ = 3.14159265358979;
 
 // ---------------- Envelope / shells ----------------
@@ -164,7 +166,7 @@ HOP_CR  = 4.4;                   // inner corner radius (card corner r3.2 fits u
 HOP_FLOOR_T = 1.6;
 HOP_Z1  = CAP_IN_Z - 4.0;       // clears the cap's inner rim chamfer at the hopper corners
 THROAT  = 0.45;                  // single-card gap under the gate
-FEED_D = 14; FEED_W = 8; FEED_X = 34; FEED_Y = -28;
+FEED_D = 14; FEED_W = 8; FEED_X = 34;
 FEED_Z = Z_LOAD - FEED_D / 2;    // roller tops flush with the hopper floor
 SHAFT_D = 3;
 SHAFT_X0 = -54.5;  SHAFT_X1 = 51.5;
@@ -175,8 +177,12 @@ assert(HOP_Y_FRONT - (PINCH_Y + fit_free(SHAFT_D) / 2) >= MIN_WALL, "pinch shaft
 PINCH_SQ = 0.15;                 // rubber squeeze on the card
 PINCH_Z = Z_LOAD + CARD_T - PINCH_SQ + PINCH_D / 2;
 PINCH_X1 = PINCH_X + PINCH_W / 2 + 1;     // pinch shaft runs from SHAFT_X0 to here
-BELT_X = -52;                    // O-ring belt plane (-X, outboard of the -X comb)
-PUL_FEED_D = 12;  PUL_PINCH_D = 5.8;      // groove diameters: pinch surface speed = 1.03 x feed
+// pinch drive (D-18 rev. QA2): one spur-gear mesh between the feed shaft (rollers UNDER the card)
+// and the pinch shaft (rollers ABOVE the card) -> opposite rotation -> both contacts push the card +Y.
+LG_M = 0.5;  LG_T_FEED = 43;  LG_T_PINCH = 21;  LG_W = 3.5;  LG_MESHES = 1;
+LG_C = LG_M * (LG_T_FEED + LG_T_PINCH) / 2;            // centre distance 16.0
+FEED_Y = PINCH_Y - sqrt(LG_C * LG_C - (PINCH_Z - FEED_Z) * (PINCH_Z - FEED_Z));
+LG_X = -52;                                            // gear plane (-X, outboard of the -X comb)
 GATE_YC = (HOP_Y_FRONT + HOP_YI0) / 2;
 LOADIR_X = 38;  LOADIR_Y = -17;  // load break-beam (outside the pinch rollers / shaft)
 WEIGHT_T = 10;
@@ -219,7 +225,7 @@ FINGER_X = 40;
 SLOT_Z0 = Z_EJECT - 1.5;  SLOT_Z1 = Z_EJECT + 4.5;   // exit slot in the shell
 assert(NIP_Y - WHEEL_D / 2 >= RACK_Y1 + CLR, "launcher wheel overlaps rack sweep");
 
-// ---------------- Burn tray (drawer under the exit) ----------------
+// ---------------- Front slot panel under the exit slot (D-20: no burn tray) ----------------
 BT_XO = 46.2;  BT_Y0 = 54;  BT_Z0 = TT_TOP + 0.5;  BT_Z1 = 106;  BT_WALL = 1.6;
 
 // ---------------- Base ----------------
@@ -237,24 +243,28 @@ TM_Y    = RING_LAND + PUL_PR - 0.254;  // turret motor axis (static, +Y crescent
 PUL_TOP_Z = TURNTABLE_Z - 0.5;
 PUL_TEETH_H = 8;  PUL_FL_T = 1;  PUL_HUB_H = 5;  PUL_HUB_D = 16;
 RING_Z0 = PUL_TOP_Z - PUL_TEETH_H + 0.2;
-TM_FACE_Z = PUL_TOP_Z - PUL_TEETH_H - PUL_FL_T - PUL_HUB_H - 0.2 - NEMA_BOSS_H;
+TM_FACE_Z = DECK_Z - 5.2;          // pancake face hangs 5.2 below the deck (standoffs)
+TM_SHAFT_L = PUL_TOP_Z - TM_FACE_Z; // pancake shaft length needed (use a 22.5 mm+ shaft)
+PUL_Z0 = PUL_TOP_Z - PUL_TEETH_H - PUL_FL_T - PUL_HUB_H;
 HALL_R = 29.5;                     // hall sensor + magnet radius (inside bearing ID), at +X
-CABLE_HOLE = [0, -24];  CABLE_HOLE_D = 16;   // turntable cable pass (in bearing ID)
+CABLE_HOLE = [0, -24];  CABLE_HOLE_D = 18;   // turntable cable pass (in bearing ID)
 // harness (D-19): flat ribbon wound as a clock spring in the bearing ID, outer end up through
 // CABLE_HOLE into the loader-frame box, inner end down a radial deck slot over the battery
 // (0.4 + 2.0 mm deep under the bearing plate) to the -Y electronics crescent.
-SPOOL_RI = 7;     SPOOL_RO = 20;  SPOOL_Z0 = DECK_Z + DECK_T + 1;  SPOOL_H = 7;
-RIBBON_W = 12;  RIBBON_SLOT_X = [-21, -7];  RIBBON_SLOT_Y1 = -52;
+SPOOL_RI = 7;     SPOOL_RO = 22;  SPOOL_Z0 = DECK_Z + DECK_T + 0.5;  SPOOL_H = 13.6;   // coil of 2 x 10-way ribbon on edge (12.7 wide)
+RIBBON_W = 12.7;  RIBBON_T = 0.9;  RIBBON_N = 2;   // two 10-way 1.27 mm ribbons laid flat on each other
+RIBBON_SLOT_X = [-21.5, -6.5];  RIBBON_SLOT_Y1 = -52;
 DECK_SCREW_R = 88;  DECK_SCREW_A = [25, 155, 205, 335];
 UI_Z = 24;                       // UI row centre height on the base wall
 // ---------------- Base layout (world, static) ----------------
 UI_NOTCH_X = 44;  UI_NOTCH_Z0 = 8;
 OLED_Z = 26;  BTN_X = 33;  BTN_Z = 20;  LED_X = -21;  LED_Z = 14;
-ESP_POS = [0, -59.65, FLOOR_T + 10];  TMC_POS = [[-50, -58, FLOOR_T + 10], [50, -58, FLOOR_T + 10]];
+ESP_POS = [0, -59.65, FLOOR_T + 11.5];  TMC_POS = [[-50, -58, FLOOR_T + 11.5], [50, -58, FLOOR_T + 11.5]];
 DRV_POS = [45, 60, FLOOR_T + 6.4];   M560_POS = [-45, 60, FLOOR_T + 3];
 ROCKER_A = 140;  JACK_A = 40;  PWR_Z = 20;
-DOOR_SCREWS = [[-77.8, -20], [-77.8, 20], [77.8, -20], [77.8, 20]];
-DOOR_REBATE = 4;  DOOR_REBATE_T = 1.2;  DOOR_RING_T = 1.2;   // raised floor ring keeps 1.6 mm over the rebate
+DOOR_REBATE_X = 8;  DOOR_REBATE_Y = 3;  DOOR_REBATE_T = 2.0;  DOOR_RING_T = 1.6;   // 2 mm flange takes CSK M3 heads; floor ring keeps 1.2 over the rebate
+DOOR_SCREW_X = CR_XI + 4.5;      // on the X-end flanges: boss clears the cradle, CSK head clears the flange edge
+DOOR_SCREWS = [[-DOOR_SCREW_X, -20], [-DOOR_SCREW_X, 20], [DOOR_SCREW_X, -20], [DOOR_SCREW_X, 20]];
 // turntable fixing points (CSK M3 from below into inserts in the turret parts).
 // Keep clear of the ring gear (r 60..66).
 FIX_RAIL   = [[69, -4], [69, 44]];
@@ -278,7 +288,7 @@ WING_FIX = [[-39.25, -42], [39.25, -42], [-39.25, -77], [39.25, -77]];  // CSK M
 SERVO_FIX = [[20, -42], [20, -77]];               // servo plate -> wing inserts
 WING_Z0 = Z_EJECT - 5.5;  WING_Z1 = Z_EJECT + 1.95;
 LEDGE_Z0 = WING_Z0 - 6.5;
-HOP_TAB_Y = [-40, -70];
+HOP_TAB_Y = [-48, -70];
 // ---------------- Launcher idler linkage (Y, z rel. Z_EJECT) ----------------
 IDL_A = [NIP_Y, -IDLER_D / 2];      // idler axle
 IDL_P = [57.5, -10.5];              // pivot (8.7 mm from the idler axle)
@@ -289,3 +299,7 @@ UI_INSET = 0.6;                  // flat UI parts sit this far inside the curved
 function ui_az(x) = 270 + asin(x / TURRET_R);    // azimuth of a UI element at chord offset x (front, -Y)
 LFL_INS = [57.5, -6];            // launcher-floor end-block insert (Y, z rel. Z_EJECT)
 SP_TAB_X0 = 39;  SP_INS = [75, TT_TOP + 22];   // slot panel tabs: insert (Y, z) from the side plates
+// 53rd-card probe (firmware): rack position where the load plane meets the solid back face of
+// the rack top plate (card band centred in the 1.2 mm plate) -> a fed card stalls under the pinch.
+PROBE_RACK_POS = Z_LOAD - RACK_Z_MIN - (RACK_CAP + (SHELF_COUNT - 1) * SHELF_PITCH + SHELF_GAP) - 0.45; // @shared mm
+assert(abs(0.45 - (RACK_TOP_T - CARD_T) / 2) < 1e-9, "PROBE_RACK_POS assumes RACK_TOP_T 1.2");

@@ -2,9 +2,15 @@
 
 namespace dealer {
 
+TurretHoming::TurretHoming(const HomingParams& p) : p_(p) {
+  int32_t room = p_.fullSteps - p_.estSteps;
+  if (room < 0) room = 0;
+  posWindow_ = p_.windowSteps < room ? p_.windowSteps : room;
+}
+
 int32_t TurretHoming::maxReach() const {
   // worst case: found at the top of the positive window, then clear + backoff
-  return p_.windowSteps + p_.zoneMaxSteps + p_.backoffSteps;
+  return posWindow_ + p_.zoneMaxSteps + p_.backoffSteps;
 }
 
 HomingCmd TurretHoming::enterClear(int32_t pos) {
@@ -25,7 +31,7 @@ HomingCmd TurretHoming::step(int32_t pos, bool sensor) {
       if (sensor) return enterClear(pos);
       if (pos <= target_) {
         phase_ = Phase::SeekPos;
-        target_ = p_.windowSteps;
+        target_ = posWindow_;
       }
       return {HomingCmd::Move, target_, HomingSpeed::Fast};
 

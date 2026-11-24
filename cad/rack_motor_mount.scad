@@ -5,9 +5,9 @@
 include <params.scad>
 include <lib/lib.scad>
 LMM_LX0 = LM_X - 14; LMM_LX1 = LM_X + 14;     // leg X span
-LMM_YL  = NEMA_W / 2 + 0.25;                   // leg inner |Y|
+LMM_YL  = NEMA_W / 2 + 1.25 * GAP;                   // leg inner |Y|
 module lmm_plate2d() union() {
-    translate([LM_X, LM_Y]) offset(delta = 3.5, chamfer = true) square(2 * 15.5 + 0.1, center = true);
+    translate([LM_X, LM_Y]) offset(delta = 3.5, chamfer = true) square(2 * 15.5 + 0.1, center = true);   // geom
     translate([(LMM_LX0 + LMM_LX1) / 2, LM_Y]) square([LMM_LX1 - LMM_LX0, 2 * (LMM_YL + 2)], center = true);
 }
 module rack_motor_mount() difference() {

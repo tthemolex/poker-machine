@@ -182,6 +182,7 @@ the hand like a misdeal: the button stays; collect all cards and start the hand 
 | `MORE THAN 52 CARDS` | rack full, then the loader beam still sees a card from the hopper | Extra / foreign card in the deck | The probed card is pulled back into the hopper. Remove the extra cards from the hopper, press GO. The 52 loaded cards stay in the rack. |
 | `RACK HOMING FAILED` | bottom microswitch not seen within `RACK_HOME_TIMEOUT_MS`, or stuck pressed | Rack stuck, switch broken, motor wiring; no 12 V | Check rods/leadscrew for binding, switch wiring. Press GO and retry. |
 | `BATTERY LOW-CHARGE` | battery < `VBAT_MIN` (10.5 V) at GO | Battery too low to finish a hand reliably | Charge the TalentCell (its own charger via the panel DC jack). Hand refused. |
+| `BATTERY SENSE ERROR` | reading > 14 V, negative, or a jump > 1 V from the previous reading (`VbatMonitor`) | ADC / divider / wiring fault: the 10.5 V check cannot be trusted | Press GO (re-reads). A single glitch heals after two consistent readings; if it persists, check the 100k/22k divider and the GPIO34 wire. Hand refused meanwhile. |
 | `NO BATTERY (USB)` | battery < `VBAT_ABSENT` (3 V) | Running from USB only, the motors have no power | Switch the battery on. |
 
 ## Turret homing
@@ -195,18 +196,32 @@ firmware believes the turret is (`dealer::TurretHoming`, tested in `test/test_ho
    have been turned by hand).
 2. If the hall is already active, go to step 5.
 3. Seek negative (counter-clockwise) down to `est + TURN_SEARCH_WINDOW_DEG` below the start.
-4. Then seek positive up to `TURN_SEARCH_WINDOW_DEG` above the start (a turret nudged
-   counter-clockwise past the magnet is found from the other side). Not found: fault
-   `TURRET HOMING FAILED`. It never sweeps further.
+4. Then seek positive up to `min(TURN_SEARCH_WINDOW_DEG, 360° − est)` above the start (a
+   turret nudged counter-clockwise past the magnet is found from the other side; the clamp
+   keeps the believed angle ≤ 360°). Not found: fault `TURRET HOMING FAILED`. It never sweeps
+   further.
 5. Found from either side: move positive until the hall releases (at most `TURN_ZONE_MAX_DEG`,
    else "stuck sensor" fault), `TURN_BACKOFF_DEG` further, then approach **slowly in the
    negative direction** (`TURN_HOMING_SLOW`). The first hall edge is 0°. The zero is always the
    same edge, approached from the same side, so it is repeatable.
 
-Worst case the turret goes `TURN_SEARCH_WINDOW_DEG` (25°) past where it started in either
-direction, so the cable service loop must allow about ±25° beyond the 0..360° range. If power
-is lost mid-deal or the turret was turned far by hand, homing faults instead of winding the
-cables: turn the turret to the home mark and press GO.
+**Reach** (`TurretHoming::minReach / searchMaxReach / maxReach`, tested with the real
+constants in `test_real_constants_reach`), relative to where the search starts:
+
+* counter-clockwise: at most `est + 25°`;
+* clockwise while searching: at most `min(25°, 360° − est)`;
+* after the magnet is found: at most `TURN_ZONE_MAX_DEG + TURN_BACKOFF_DEG` = 20° past the
+  magnet's edge (clear the zone + back off), then back to it slowly.
+
+So when parked (est = 0) the turret moves within −25°..+45° of its start (+45° only if the
+magnet is found at the very end of the + window, i.e. after a 25° clockwise nudge). In true
+table angles, with the believed angle correct, the whole search stays within
+**−25°..+360°**: −25° at the end of the counter-clockwise window; the + window never takes
+it past 360°; after detection it is within 20° of the magnet at 0°. Normal operation uses
+0..350°. **The cable route (clock spring) must therefore cover −25°..+360°**, plus any angle
+the turret is turned by hand while the motors are released (that shifts the whole window).
+If power is lost mid-deal or the turret was turned far by hand, homing faults instead of
+winding the cables: turn the turret to the home mark and press GO.
 
 The rack homes against the bottom microswitch (always a safe direction: the rack can only go
 down to it).
@@ -233,6 +248,10 @@ and every 5 s while idle (motors off, so it is the resting voltage).
 * **At boot** the battery is checked before anything moves: below 10.5 V (or no battery) the
   firmware shows the fault and waits; GO re-reads the battery. No homing on USB power only.
 * The serial console refuses motion commands below 10.5 V.
+* Every reading also passes a plausibility guard (`VbatMonitor`): above 14 V, below 0 V, or
+  a jump of more than 1 V since the previous reading (switching the battery on/off excepted)
+  is `BATTERY SENSE ERROR` and refuses the hand, so an ADC fault can never silently pass the
+  10.5 V check.
 * < 3 V: no battery / USB only (`NO BATTERY (USB)`).
 
 ## Calibration constants (`firmware/include/config.h`)
@@ -274,12 +293,13 @@ eject station. Seats: `BOARD_DEG + (seat + 0.5) × 360 / N`; board slot k:
 | `TURN_HOME_TIMEOUT_MS`, `RACK_HOME_TIMEOUT_MS`, `BACKOFF_TIMEOUT_MS` | 40000 / 8000 / 3000 | Homing watchdogs (the turret search is bounded by angle, not time) | Rack: longer than the full 81 mm travel at homing speed. |
 | `LAUNCH_SEAT` | 255 | Launcher PWM for a throw to a seat | Deal hole cards to 10 seats; lower it if cards fly off the table, the farthest seat must still be reached. |
 | `LAUNCH_BOARD` | 110 | Launcher PWM for the board (short throw next to the machine) | Board cards should land 10–15 cm from the base and not overlap seat 1 / seat N. |
-| `LAUNCH_BURN` | 55 | Launcher PWM for a burn: very low throw onto the burn spot at `BURN_DEG` | Lowest PWM at which the card reliably leaves the nip and lands clear of the base, close to the machine, not on the board fan or seat 1's cards. |
+| `LAUNCH_BURN` | 55 | Launcher PWM for a burn: very low throw onto the burn spot at `BURN_DEG` | The burn card must **fully clear the exit slot every time**: when the tail leaves the nip the card's centre of mass is still 0.95 mm *inside* the slot lip (CAD), so without the kick it would tip back or hang on the lip. Test 20 × `deal burn`: every card must land on the table clear of the base, near the machine, not on the board fan or seat 1's cards. Raise `LAUNCH_BURN` (or the kick below) until all 20 pass. |
+| `LAUNCH_BURN_KICK`, `BURN_KICK_MS` | 110, 200 ms | Burn kick: as soon as the burn card's tail passes IR_EXIT (it is still in the nip), the wheel runs at `LAUNCH_BURN_KICK` for `BURN_KICK_MS`, so the tail is flung clear of the lip while the card still starts slowly | Raise if burns hang on the lip; lower if burns fly into the board pile. `LAUNCH_BURN_KICK ≤ LAUNCH_BURN` disables it. |
 | `LAUNCH_PURGE` | = `LAUNCH_BOARD` | Launcher PWM for purge and double-feed clearing (to the burn spot; may be two stacked cards) | Two stacked cards must leave the nip without a `LAUNCHER JAM`. |
 | `LAUNCH_RAMP_MS` | 120 | Soft PWM ramp (12 steps) whenever the launcher speeds up | Limits the 130 motor's inrush (stall current 1.5–2.5 A at 5 V) so the DRV8833 over-current protection does not trip and the 5 V rail does not dip. Increase if the ESP32 browns out at spin-up. |
 | `SPINUP_MS` | 250 | Wait after the ramp / a speed change | Increase if the first card after a speed change flies differently. |
 | `EXTRA_CARD_PROBE`, `PROBE_REVERSE_MS` | true, 300 | 53rd-card check after the rack is full; reverse time to pull the probed card back | Reverse long enough that the card is back behind the roller nip; set false to skip the check. |
-| `HW_ENTROPY_DURING_DEAL` | true | SAR-ADC entropy for `esp_random()` while dealing (see Notes) | Leave on. |
+| `RNG_SEED_WORDS` | 16 | 32-bit words of true entropy collected at boot to seed xoshiro256** (512 bits) | Leave (≥ 8 = 256 bits). |
 | `CONSOLE_IDLE_MS` | 60000 | Console motors power down after this long without a command | |
 | `FEED_PWM` | 170 | Loader roller PWM | Lowest reliable feed; higher speeds make double feeds more likely. |
 | `NO_CARD_MS` | 1500 | No card at the loader beam within this = hopper empty | Must exceed the time for one card to reach the beam. |
@@ -293,6 +313,7 @@ eject station. Seats: `BOARD_DEG + (seat + 0.5) × 360 / N`; board slot k:
 | `EXIT_JAM_MS` | 1000 | Launcher beam blocked longer = jam | > time for a card to pass at `LAUNCH_BURN`. |
 | `VBAT_R_TOP_K`, `VBAT_R_BOT_K` | 100, 22 | Battery divider | Match the fitted resistors. |
 | `VBAT_WARN`, `VBAT_MIN`, `VBAT_ABSENT` | 10.9, 10.5, 3.0 V | Battery thresholds | Spec values; do not lower VBAT_MIN (3S Li-ion cut-off margin). |
+| `VBAT_MAX_PLAUSIBLE`, `VBAT_MAX_JUMP` | 14.0 V, 1.0 V | Plausibility guard: above 14 V, or a change of more than 1 V between consecutive readings (except to/from "no battery") = `BATTERY SENSE ERROR`, hand refused | Leave. A real 3S pack never exceeds 12.6 V and does not jump 1 V between idle reads 5 s apart. |
 | `VBAT_CAL` | 1.0 | Scale the reading | Measure the pack with a multimeter, set `VBAT_CAL = V_meter / V_shown`. |
 | `DEBOUNCE_MS`, `LONG_PRESS_MS` | 30, 800 | Buttons | |
 | `MIN_PLAYERS`, `MAX_PLAYERS`, `DEFAULT_PLAYERS` | 2, 10, 6 | Table size | |
@@ -339,8 +360,8 @@ release the motors; no GO acknowledgement is needed on the console.
 | `sensors` | raw IR_LOAD, IR_EXIT, HOME_TURN, HOME_RACK, GO, SET |
 | `on` / `off` / `home` | power up + home / park + power down / forget zeros and re-home both axes |
 | `rack eject <shelf>` / `rack load <shelf>` | move shelf 0..51 to the eject / load station |
-| `rack mm <mm>` / `rack steps <n>` | absolute rack position from home (clamped to travel) |
-| `turret <deg>` / `seat <n>` / `board <k>` | aim at an angle / seat 1..N / board slot 0..4 |
+| `rack mm <mm>` / `rack steps <n>` | absolute rack position from home, both clamped to [0, `RACK_TRAVEL` + trim] |
+| `turret <deg>` / `seat <n>` / `board <k>` | aim at an angle (clamped, not wrapped, to 0..360°) / seat 1..N / board slot 0..4 |
 | `launch <pwm> [ms]` | run the launcher (default 2000 ms, 0 = leave on; `launch 0` stops) |
 | `feed <pwm> [ms]` | run the loader roller (default 1000 ms) |
 | `servo <angle>` | pusher servo angle |
@@ -354,26 +375,35 @@ release the motors; no GO acknowledgement is needed on the console.
 
 * Rack and turret positions are always computed as geometry (params.scad) + trim (config.h);
   there is no other override of pitch, station offset, steps/mm or steps/deg.
-* Randomness: `esp_random()` is a true RNG only while an entropy source runs (Wi-Fi/BT, or
-  the SAR-ADC noise source). The radios are never on, so `Machine::executePlan()` and
-  `purgeAll()` call `bootloader_random_enable()` for the duration of the deal and
-  `bootloader_random_disable()` afterwards (`EntropyScope`). The entropy source uses the SAR
-  ADC, which the battery sense (GPIO34, ADC1) also needs, so it is never on while the ADC is
-  read: battery reads only happen between deals, and `readVbat()` re-applies the ADC width and
-  attenuation and discards the first conversion. (Check on the hardware that `vbat` reads the
-  same before and after a deal; if not, set `HW_ENTROPY_DURING_DEAL = false`, which falls back
-  to the hardware-seeded pseudo-random stream.) `randBelow()` uses rejection sampling, so every
-  occupied shelf is equally likely (tested with chi-square over 520 000 draws).
+* Randomness (RNG design):
+  * `esp_random()` is a true RNG only while an entropy source runs (Wi-Fi/BT, or the SAR-ADC
+    noise source enabled by `bootloader_random_enable()`). The radios are never on, and the
+    IDF requires `bootloader_random_disable()` to run *before* the ADC is initialised, while
+    the battery sense (GPIO34) is on ADC1.
+  * So entropy is gathered **once, at boot**: `seedShuffleRng()` is the first call in
+    `setup()`, before any `analogRead` or attenuation setup. It enables the entropy source,
+    reads `RNG_SEED_WORDS` = 16 words (512 bits) from `esp_random()`, disables it, and seeds
+    a **xoshiro256\*\*** generator through SplitMix64 (every seed bit affects the state;
+    reference vector and seeding tested). After that the entropy source is never touched
+    again, so the ADC is used only in its normal state.
+  * Every draw is `xoshiro256** XOR esp_random()` (`MixedSource`): the hardware stream adds
+    fresh bits and the 512-bit true-random seed makes the sequence unpredictable and
+    different on every boot.
+  * `randBelow()` rejection sampling on top picks the k-th occupied shelf with no modulo bias.
+    Tested with chi-square over 520 000 draws for the mixed source, xoshiro alone and
+    SplitMix64.
 * The rack map is saved to NVS after each load, each street, at power-down and on every fault
   (only when it changed). If the machine loses power mid-deal, the map can be wrong: that
   shows up as `NO CARD IN SHELF` or `CARD COUNT != 52`; purge (hold SET at power-on) to reset.
 * A loader jam leaves the jammed card out of the map: remove it and feed it again.
-* 53rd-card probe: after the 52nd card the rack moves to its homed position, where the load
-  station is `STATION_OFFSET` (3 pitches) above shelf 51, so no shelf faces it
-  (`rackNoShelfAtLoadMm()`, tested). The roller runs until the loader beam sees a leading
-  edge (max `NO_CARD_MS`), stops at once and reverses for `PROBE_REVERSE_MS`. A card is never
-  pushed into a full shelf; at worst its leading edge touches the rack top plate. This needs
-  the rack top plate (above shelf 51) to cover the load station at the homed position, and the
-  loader beam to sit before the rack face. If the beam is placed so that a card can only
-  reach it once it is past the reverse-able roller, set `EXTRA_CARD_PROBE = false`; then a 53rd
-  card is not detected (known limitation).
+* 53rd-card probe: after the 52nd card the rack moves to `geom::PROBE_RACK_POS` (3.45 mm
+  from home, params.scad; `rackProbeMm()`). There no shelf slot faces the load station (the
+  nearest, shelf 51, is 0.45 mm clear below the incoming card; tested in
+  `test_probe_position_faces_no_shelf`), and the load plane meets the **solid back face of
+  the rack top plate**. The roller runs until IR_LOAD sees a leading edge (max `NO_CARD_MS`)
+  and stops; a coasting card stalls against the top plate about 4 mm past the pinch line,
+  still held by the rollers, and is reversed back into the hopper for `PROBE_REVERSE_MS`. A
+  card is never pushed into a full shelf. (At rack 0 the card would pass over the rack top to
+  the stop fingers and leave the pinch, so it could not be reversed; that is why the probe
+  uses 3.45 mm.) Set `EXTRA_CARD_PROBE = false` to skip the check; then a 53rd card is not
+  detected (known limitation).

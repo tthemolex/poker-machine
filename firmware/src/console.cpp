@@ -53,8 +53,8 @@ bool ensurePowered(Machine& m) {
   if (refuseInService()) return false;
   motorsTouched = true;
   if (m.powered()) return true;
-  const float v = m.readVbat();
-  const dealer::BatteryLevel b = dealer::classifyBattery(v);
+  float v;
+  const dealer::BatteryLevel b = m.battery(&v);
   if (!dealer::batteryAllowsStart(b)) {
     Serial.printf("battery %.2f V (%s): motors not powered\n", static_cast<double>(v),
                   dealer::batteryText(b));
@@ -64,12 +64,13 @@ bool ensurePowered(Machine& m) {
 }
 
 void status(Machine& m, const dealer::Game& g) {
-  const float v = m.readVbat();
+  float v;
+  const dealer::BatteryLevel bl = m.battery(&v);
   Serial.printf("players %u, button seat %u, rack %d/52, mask 0x%013llx\n",
                 static_cast<unsigned>(g.players()), static_cast<unsigned>(g.button() + 1),
                 m.rack().count(), static_cast<unsigned long long>(m.rack().mask()));
   Serial.printf("battery %.2f V (%s), motors %s, rack %ld steps (%.2f mm), turret %ld steps (%.2f deg)\n",
-                static_cast<double>(v), dealer::batteryText(dealer::classifyBattery(v)),
+                static_cast<double>(v), dealer::batteryText(bl),
                 m.powered() ? "ON" : "off", static_cast<long>(m.rackSteps()),
                 static_cast<double>(m.rackSteps() / geom::RACK_STEPS_PER_MM),
                 static_cast<long>(m.turretSteps()),
@@ -116,9 +117,9 @@ bool run(Machine& m, const dealer::Game& g, char* cmdline) {
   } else if (!strcmp(cmd, "status")) {
     status(m, g);
   } else if (!strcmp(cmd, "vbat")) {
-    const float v = m.readVbat();
-    Serial.printf("%.3f V (%s)\n", static_cast<double>(v),
-                  dealer::batteryText(dealer::classifyBattery(v)));
+    float v;
+    const dealer::BatteryLevel bl = m.battery(&v);
+    Serial.printf("%.3f V (%s)\n", static_cast<double>(v), dealer::batteryText(bl));
   } else if (!strcmp(cmd, "sensors")) {
     sensors();
   } else if (!strcmp(cmd, "on")) {

@@ -15,9 +15,10 @@ int32_t rackMmToSteps(float mm);
 int32_t rackEjectSteps(int shelf);
 int32_t rackLoadSteps(int shelf);
 constexpr float kRackMaxMm = geom::RACK_TRAVEL;
-// Rack position at which NO shelf faces the load station (homed: the load station
-// is STATION_OFFSET above shelf 51). Used to probe the hopper for a 53rd card.
-float rackNoShelfAtLoadMm();
+// Rack position for the 53rd-card probe (geom::PROBE_RACK_POS + trim): no shelf
+// slot faces the load station; a probed card stalls against the solid back face
+// of the rack top plate, past the pinch line, and can be reversed out.
+float rackProbeMm();
 
 // ---------------- Turret (degrees, clockwise from home = board) ----------------
 // Wrap into [0, 360). The turret never crosses 360 (cable service loop), so every

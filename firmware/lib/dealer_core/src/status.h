@@ -18,8 +18,9 @@ enum class Fault : uint8_t {
   BatteryLow,     // below VBAT_MIN: hand refused
   NoBattery,      // below VBAT_ABSENT: running from USB only
   ExtraCards,     // rack full but the hopper still holds a card (more than 52)
+  BatterySense,   // implausible battery reading (VbatMonitor): hand refused
 };
-constexpr Fault kLastFault = Fault::ExtraCards;
+constexpr Fault kLastFault = Fault::BatterySense;
 
 // Short text, <= 21 chars (one 128 px OLED line at text size 1).
 const char* faultText(Fault f);

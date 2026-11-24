@@ -103,11 +103,25 @@ void test_turret_steps_in_range() {
   TEST_ASSERT_EQUAL_INT32(lroundf(normDeg(tr) * geom::TURRET_STEPS_PER_DEG), turretDegToSteps(0.0f));
 }
 
-// At the probe position the load station is at least one full pitch away from every shelf.
+// At the probe position no shelf slot faces the load station: an incoming card band
+// [0, CARD_T] above the load plane must not overlap any shelf gap. With the rack at r,
+// shelf i's card plane sits at r - load(i) relative to the load plane.
 void test_probe_position_faces_no_shelf() {
-  const float x = rackNoShelfAtLoadMm();
-  TEST_ASSERT_TRUE(x >= 0.0f && x <= kRackMaxMm + cfg::RACK_ZERO_TRIM_MM);
-  for (int i = 0; i < 52; i++) TEST_ASSERT_TRUE(fabsf(rackLoadMm(i) - x) >= geom::SHELF_PITCH - 1e-4f);
+  const float r = rackProbeMm();
+  TEST_ASSERT_FLOAT_WITHIN(1e-4f, geom::PROBE_RACK_POS + cfg::RACK_ZERO_TRIM_MM, r);
+  TEST_ASSERT_TRUE(r >= 0.0f && r <= kRackMaxMm + cfg::RACK_ZERO_TRIM_MM);
+  float minClear = 1e9f;
+  for (int i = 0; i < 52; i++) {
+    const float gapLo = r - rackLoadMm(i), gapHi = gapLo + geom::SHELF_GAP;
+    const bool below = gapHi <= 0.0f, above = gapLo >= geom::CARD_T;
+    TEST_ASSERT_TRUE_MESSAGE(below || above, "a shelf slot faces the load station");
+    const float c = below ? -gapHi : gapLo - geom::CARD_T;
+    if (c < minClear) minClear = c;
+  }
+  // clearance to the nearest slot (shelf 51 just below): >= 0.3 mm (0.45 mm with 3.45)
+  TEST_ASSERT_TRUE(minClear >= 0.3f);
+  // and it is above shelf 51's load position: the card meets the top plate, no shelf
+  TEST_ASSERT_TRUE(r < rackLoadMm(51));
 }
 
 int main(int, char**) {

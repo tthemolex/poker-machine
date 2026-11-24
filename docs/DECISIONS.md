@@ -98,11 +98,13 @@ Measured with tools/cad_size.py (all parts incl. vendor and cards, 8 turret angl
 | QA cycle 1: pinch pair at the throat (D-18) | gate 6.4 -> 9.4, hopper wall 1.6 -> 1.2, card Y clearance 1.0 -> 0.8, TURRET_R 97.5 -> 99.5 | **199.0** | 207.5 |
 
 What sets the size now:
-* Radius: the hopper / loader-frame back corners (r 95.1), set by card length + gate 6.4 + rack
-  back face. Then the rack NEMA corner (r 94.6), set by comb wall 4.5 + 0.9 gap + motor
-  42.3. The shell inner face is 0.5 mm outside them and the wall is 1.8 mm. Going smaller needs
+* Radius (updated after QA cycles 1-2): the hopper / loader-frame back corners (r 97.19), set by
+  card length + gate 9.4 (pinch pair, D-18) + rack back face. Then the rack NEMA corner (r 94.60),
+  set by comb wall 4.5 + 0.9 gap + motor 42.3. The shell inner face (r 97.7) is 0.5 mm outside
+  them and the wall is 1.8 mm. Going smaller needs
   a narrower motor (e.g. NEMA14 + T8) or a hopper that does not sit fully behind the rack.
-* Height: rack sweep. The rack top reaches 205.0 at full travel, then 0.5 mm clearance and the
+* Height: rack sweep, plus the 6 mm bearing spacer added in QA cycle 2 (D-19): 207.5 -> **213.5**
+  (margin 6.5 to 220). The rack top reaches 211.0 at full travel, then 0.5 mm clearance and the
   2 mm cap. The only CAD-owned levers left are under 1 mm (cap 2 -> 1.6). The real lever is
   @shared: STATION_OFFSET 3 -> 2 pitches (-1.5 mm) is possible if the hopper floor doubles as the
   blade-guide roof. It is proposed to the orchestrator and not applied.
@@ -180,3 +182,64 @@ per side and 1.5 mm above and below the card plane.
   lifts off with the cap off and the turret stays on the base.
 * The pusher angles are @shared: PUSH_HOME_DEG 10, PUSH_SWEEP_DEG 150, PUSH_OUT_DEG 160,
   PUSH_PINION_R 7.5, PUSH_STROKE_MM 19.63 (firmware: geom::PUSH_*).
+
+## D-18 rev. (QA cycle 2): pinch drive by one gear mesh, fixed gate
+QA found that the open O-ring belt turned the pinch shaft the same way as the feed shaft. The pinch
+rollers touch the card from ABOVE and the feed rollers from BELOW, so the two pushed in opposite
+directions. The belt is replaced by a spur-gear pair on the -X side (X -52): 43T m0.5 on the feed
+shaft and 21T on the pinch shaft. Centre distance 16.0 is exact; FEED_Y is derived from it. One mesh
+reverses the rotation, so the feed-roller top and the pinch-roller bottom both move +Y. The pinch runs
+1.024x faster than the feed, so the card stays taut. tools/cad_cardpath.py checks direction, ratio and
+centre distance.
+A floating shaft would change the gear centre distance, so the pinch shaft is now fixed: it runs in a
+bore in the gate and a bearing hole in the hopper wall. The pinch compliance comes from the 0.15 mm
+rubber squeeze. The gate springs are gone, and the gate is fixed: reprint it to change THROAT.
+
+## D-19 rev. (QA cycle 2): clock spring at true size, base stack +6 mm
+A clock spring winds the ribbon on edge, so the coil height has to be at least the ribbon width. The
+harness is now **2 x 10-way 1.27 mm ribbon** (12.7 x 0.9 mm each). The two lie flat on each other and
+are wound together around the static hub (coil r 9.5..22, height 13.6). A **6 mm printed spacer** under
+the lazy susan gives the bearing ID 15.5 mm of height. That raises the turntable and the whole turret
+by 6 mm: @shared **RACK_Z_MIN 44.5 -> 50.5** (Z_EJECT 128.2, Z_LOAD 132.7), height 207.5 -> 213.5.
+The deck slot (14 mm wide) passes the flat pair over the battery (2.4 mm of room for 1.8 mm of ribbon).
+The turntable hole is now Ø18. The pancake motor stays under the deck; its pulley rides 6 mm higher,
+so it needs a >= 22.5 mm shaft.
+**20 conductors:** rack stepper 4 coils x 2 wires = 8; 130 motor 2; N20 2; +5 V 2; GND 2; servo PWM 1;
+IR_LOAD 1; IR_EXIT 1; rack microswitch 1. That is <= 0.5 A per conductor except the 130-motor pair
+(about 0.5 A run, 1.5 A for under 100 ms at start-up), which is within short-term AWG28 ratings.
+**Travel:** the firmware clamps homing, so the worst-case range is -25 deg .. +360 deg = 385 deg.
+Clock-spring capacity = wraps when wound tight on the hub minus wraps when pressed against the wall:
+n = (sqrt(r_h^2 + L t/pi) - r_h)/t - (r_w - sqrt(r_w^2 - L t/pi))/t. With hub r_h 9.5, wall r_w 22 and
+pack t 1.8 mm (2 ribbons), the best active length is L = 340 mm, giving 1.33 turns = 478 deg.
+That covers 385 deg with 93 deg of margin (about 46 deg at each end).
+Assembly: wind 340 mm of the ribbon pair into the coil and set it half wound with the turret at
+mid-range (+167.5 deg), so -25 deg and +360 deg are each 192.5 deg from neutral. BUILD.md needs this step;
+the docs agent has been told.
+
+## D-20 rev. (QA cycle 2 / orchestrator): burn spot on the table, BURN_DEG = 22 (@shared)
+Physics: a pinched card moves in a straight line at any launcher speed until its tail leaves the nip
+(Y 65). At that moment its centre of mass is at Y 96.75, 0.95 mm inside the slot lip (shell inner face
+97.7), and its nose is 29 mm outside the shell. An internal tray needs at least 63.5 mm of free path
+after the nip, and we have about 33. An external tray under the slot needs about Ø225. A deflector
+cannot tell slow cards from fast ones while they are pinched. A flap needs an extra actuator.
+Choice: **A**. Burns are dropped face down at the lowest launcher speed onto a burn spot on the table
+right in front of the machine, at BURN_DEG = 22 (between the board fan 0..16 deg and seat 0 at >= 26 deg).
+It beats B (burn left in its shelf) because players can see the physical burn, like a human dealer.
+It beats D (servo flap + chute) because D adds a servo, a pivot pin, wiring and a failure point.
+There is no burn tray, and no part, vendor or BOM entry refers to one. tools/cad_cardpath.py reports
+the release geometry: LAUNCH_BURN must give >= 2 mm of residual travel past the nip so the centre of
+mass clears the lip and the card tips out.
+
+## D-22 QA cycle 2 fixes (CAD)
+* Battery door: CSK M3 screws on the X-end flanges (x = CR_XI + 4.5). The flange is 2 mm thick, so the
+  1.65 mm heads sit flush. The rebate is 8 mm at the X ends and 3 mm along Y (clears the pancake
+  motor). Bosses take full-length inserts. The 4 screws are modelled and pass the interference check.
+* Fits: every remaining bare fit literal is now GAP / fit_* / BLADE_CLR. The printability lint now
+  flags any literal below 1 mm in a part file unless the line is tagged `// geom`.
+* 53rd-card probe: at rack_pos 0 the load plane is 2.7 mm ABOVE the rack top. A probed card would
+  slide over the rack into the stop fingers, its tail would leave the pinch, and it could not be
+  reversed. So the probe uses @shared **PROBE_RACK_POS = 3.45 mm**. There the card band (z 132.70-133.00)
+  sits inside the solid back face of the rack top plate (z 132.25-133.45). The card stalls at Y -12,
+  4 mm past the pinch line, and the 300 ms reverse pulls it back. The IR_LOAD beam is 5.0 mm before
+  the rack face, 1.0 mm behind the pinch line and 10.9 mm in front of the feed line. All of this is
+  checked in tools/cad_cardpath.py.

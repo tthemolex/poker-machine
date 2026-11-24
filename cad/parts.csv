@@ -5,7 +5,7 @@ base_deck,base_deck.scad,1,PETG,none,upside down (top face on bed),pancake NEMA 
 hall_post,hall_post.scad,1,PETG,none,upside down (sensor face on bed),pegs into the deck; A3144 glued in the groove
 spool_hub,spool_hub.scad,1,PETG,none,upside down (top on bed),static clock-spring hub for the ribbon harness (D-19); pegs into the deck
 ui_bezel,ui_bezel.scad,1,PETG black,none,upright (installed Z up),radial 12 mm button / 5 mm LED holes; OLED window top is a 23 mm bridge; bosses keep >= 1.2 mm behind the flush recesses
-turntable,turntable.scad,1,PETG,none,upside down (top face on bed),200T ring hub (GT2 belt glued teeth-out D-11) with a 0.6 mm seat lip; CSK holes print as upward cones; magnet through-hole
+turntable,turntable.scad,1,PETG,none,upside down (top face on bed),200T ring hub (GT2 belt glued teeth-out D-11) with a 0.6 mm seat lip; CSK holes print as upward cones (0.8 mm feather edge at the cone rim, inherent); magnet through-hole
 shell_anchor,shell_anchor.scad,4,PETG,none,upright,CSK M3 from below into the turntable; shell tab screwed from above (cap off)
 rack_comb,rack_comb.scad,2,PLA (0.4 nozzle / 0.12 layer),none,lying on outer face fins vertical,fins 0.9 mm = documented exception to the 1.2 mm wall rule (D-01); pilot holes 3.3 deep keep 1.2 mm; both combs identical (one turned 180 deg)
 rack_bottom_plate,rack_bottom_plate.scad,1,PLA,none,flat,1.2 mm; glued (CA) into the comb rebates
@@ -16,12 +16,13 @@ rack_motor_mount,rack_motor_mount.scad,1,PETG,none,upside down (face plate on be
 rail_frame,rail_frame.scad,1,PETG,none,lying on web outer face,rod bores Ø8.1 horizontal (small roofs); microswitch pocket
 loader_frame,loader_frame.scad,1,PETG,none,upright bottom lip on bed,ledges / IR block / tabs have 45 deg under-chamfers; N20 cradle is an open trough; harness windows bridge 16-18 mm
 hopper_body,hopper_body.scad,1,PETG,none,upright floor on bed,load plane = floor top = Z_LOAD; slotted gate fixings; open U-slot for the pinch shaft
-hopper_gate,hopper_gate.scad,1,PETG,none,lying on its front face,sets the 0.45 mm throat; holds the driven pinch rollers + 2 springs + load IR emitter (D-18); roller-cavity roofs bridge 8.6 mm
+hopper_gate,hopper_gate.scad,1,PETG,none,lying on its front face,sets the 0.45 mm throat (reprint to change); bearing for the gear-driven pinch shaft + load IR emitter (D-18); roller-cavity roofs bridge 8.6 mm
 hopper_weight,hopper_weight.scad,1,PETG 100% infill,none,flat,2 hex pockets for M8 nuts as ballast
 hopper_lid,hopper_lid.scad,1,PETG,none,flat top face on bed,drops into the top cap; through finger slot
 loader_coupler,loader_coupler.scad,1,PETG,none,upright,N20 D-shaft to 3 mm shaft; 2x M3 grubs self-tapped
-loader_pulley_feed,loader_pulley_feed.scad,1,PETG,none,flat,O-ring pulley Ø12 groove on the feed shaft (D-18); 45 deg V groove
-loader_pulley_pinch,loader_pulley_pinch.scad,1,PETG,none,flat,O-ring pulley Ø5.8 groove on the pinch shaft (D-18)
+loader_gear_feed,loader_gear_feed.scad,1,PETG,none,flat,m0.5 43T spur gear on the feed shaft (D-18); pressed on
+loader_gear_pinch,loader_gear_pinch.scad,1,PETG,none,flat,m0.5 21T spur gear on the pinch shaft: one mesh reverses the pinch (D-18)
+bearing_spacer,bearing_spacer.scad,1,PETG,none,flat,6 mm ring under the lazy susan: bearing-ID room for the ribbon clock spring (D-19)
 pusher_guide,pusher_guide.scad,1,PETG,none,upright (wing bottoms on bed),blade-channel roof and floor are bridges <= 28 mm
 pusher_slider,pusher_slider.scad,1,PETG,none,upside down (flange on bed teeth up),m1 gear rack (whole teeth only); blade fixed with 2x M2
 pusher_pinion,pusher_pinion.scad,1,PETG,none,flat,m1 15T involute; pressed on the MG90S spline + horn screw

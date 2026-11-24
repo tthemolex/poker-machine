@@ -6,9 +6,9 @@ Measured from the meshes of every placed part (printed, vendor, cards) at turret
 | | measured | hard limit | margin | stretch target | gap to stretch |
 |---|---|---|---|---|---|
 | footprint (2 x max radius) | **199.0 mm** | 200 mm | +1.0 mm | 170 mm | +29.0 mm |
-| height | **207.5 mm** | 220 mm | +12.5 mm | 180 mm | +27.5 mm |
+| height | **213.5 mm** | 220 mm | +6.5 mm | 180 mm | +33.5 mm |
 
 Hard limits: **PASS**. Max axis-aligned bounding box side: 199.0 mm.
 
 Radius drivers: base_shell 99.5, ui_bezel 99.5, turntable 99.5, slot_panel 99.5, turret_shell 99.5.
-Height drivers: top_cap 207.5, hopper_lid 207.5, rack_comb_px 205.0, rack_comb_nx 205.0.
+Height drivers: top_cap 213.5, hopper_lid 213.5, rack_comb_px 211.0, rack_comb_nx 211.0.

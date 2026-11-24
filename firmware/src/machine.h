@@ -5,6 +5,10 @@
 
 #include "dealer_core.h"
 
+// Seed the shuffle RNG from true hardware entropy. Call FIRST in setup(), before
+// any ADC use (bootloader_random_enable/disable must precede ADC initialisation).
+void seedShuffleRng();
+
 class Machine {
  public:
   void begin(uint64_t rackMask);
@@ -34,7 +38,7 @@ class Machine {
   // Calibration hooks for the serial console. Call powerUp() first.
   void calRackMm(float mm);        // absolute, from the homed bottom (clamped to travel)
   void calRackSteps(int32_t steps);
-  void calAim(float deg);          // table angle, wrapped into 0..360
+  void calAim(float deg);          // table angle, clamped into 0..360
   void calLaunch(uint8_t pwm);
   void calFeed(uint8_t pwm);
   void calServo(int angle);
@@ -44,14 +48,16 @@ class Machine {
   int32_t turretSteps() const;
   static bool sensor(int pin);     // true = active (LOW)
 
-  float readVbat();
+  float readVbat();  // raw volts (no plausibility check)
+  // Read the battery and run it through the plausibility guard (VbatMonitor).
+  dealer::BatteryLevel battery(float* volts);
   const dealer::Rack& rack() const { return rack_; }
   int lastLoadedShelf() const { return lastLoaded_; }
   void stopMotors();
 
  private:
   dealer::Fault fail(dealer::Fault f);
-  dealer::Fault ejectShelf(int shelf, float deg, uint8_t pwm, bool emptyIsFault);
+  dealer::Fault ejectShelf(int shelf, float deg, uint8_t pwm, bool emptyIsFault, bool kick);
   bool homeTurret();
   dealer::Fault probeExtraCard();
   bool homeRack();
@@ -63,6 +69,7 @@ class Machine {
   static uint8_t launchPwm(dealer::Launch l);
 
   dealer::Rack rack_;
+  dealer::VbatMonitor vmon_;
   bool powered_ = false;
   bool turretHomed_ = false;  // position counter trusted
   bool turretParked_ = true;  // at 0 deg (powerDown parks there; assumed at boot)

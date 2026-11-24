@@ -1,5 +1,10 @@
 # Architecture & layout brief (orchestrator-owned)
 
+> **Status note (after QA cycles 1–2):** this is the original layout brief. Later changes are in DECISIONS.md:
+> +6 mm bearing spacer for the harness clock spring (RACK_Z_MIN 44.5 → 50.5, D-19), the loader pinch pair (D-18), burns to a table
+> burn spot instead of a turret tray (D-20), the rack motor at the bottom with a 100 mm screw (D-10), and a shell radius of 99.5.
+> Measured result: **Ø199.0 × 213.5 mm** (renders/size_report.md). `cad/params.scad` is authoritative for all numbers.
+
 This is the agreed layout that every agent works to. Numbers marked **[P]** live in
 `cad/params.scad` (shared block) and are exported to `firmware/include/geometry.h`
 by `tools/gen_geometry.py`. Never hard-code them anywhere else.

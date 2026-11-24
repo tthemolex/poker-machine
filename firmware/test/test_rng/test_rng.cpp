@@ -131,6 +131,56 @@ void test_deal_whole_deck_first_and_last_uniform() {
   TEST_ASSERT_TRUE(chi2(last, 52, decks) < CHI2_HI_DF51);
 }
 
+// Reference vector of xoshiro256** for the state {1, 2, 3, 4} (Vigna's reference code).
+void test_xoshiro_reference_vector() {
+  Xoshiro256ss x;
+  x.setState(1, 2, 3, 4);
+  TEST_ASSERT_EQUAL_UINT64(11520ULL, x.next64());
+  TEST_ASSERT_EQUAL_UINT64(0ULL, x.next64());
+  TEST_ASSERT_EQUAL_UINT64(1509978240ULL, x.next64());
+  TEST_ASSERT_EQUAL_UINT64(1215971899390074240ULL, x.next64());
+}
+
+void test_xoshiro_seeding() {
+  const uint32_t a[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+  uint32_t b[16];
+  for (int i = 0; i < 16; i++) b[i] = a[i];
+  b[15] ^= 1;  // one bit different in the last word
+  Xoshiro256ss x, y, z;
+  x.seedWords(a, 16);
+  y.seedWords(b, 16);
+  z.seedWords(a, 16);
+  const uint64_t xv = x.next64(), yv = y.next64(), zv = z.next64();
+  TEST_ASSERT_TRUE(xv != yv);   // every seed bit matters
+  TEST_ASSERT_EQUAL_UINT64(xv, zv);  // deterministic
+  Xoshiro256ss zero;
+  zero.setState(0, 0, 0, 0);    // all-zero state is repaired
+  uint64_t orAll = 0;
+  for (int i = 0; i < 8; i++) orAll |= zero.next64();
+  TEST_ASSERT_TRUE(orAll != 0);
+}
+
+// The firmware's generator: xoshiro256** XOR a second source, under randBelow.
+void test_mixed_source_shelf_selection_uniform() {
+  const uint32_t seed[8] = {0xDEADBEEF, 1, 2, 3, 4, 5, 6, 7};
+  Xoshiro256ss x;
+  x.seedWords(seed, 8);
+  SplitMix64 hw(12345);  // stands in for esp_random()
+  MixedSource mix(x, hw);
+  Rack rack;
+  rack.setMask(Rack::kAllMask);
+  uint32_t counts[52] = {0};
+  const uint32_t draws = 520000;
+  for (uint32_t i = 0; i < draws; i++) counts[rack.pickRandom(mix)]++;
+  const double c = chi2(counts, 52, draws);
+  TEST_ASSERT_TRUE(c < CHI2_HI_DF51 && c > CHI2_LO_DF51);
+  // and xoshiro alone
+  uint32_t c2[52] = {0};
+  for (uint32_t i = 0; i < draws; i++) c2[rack.pickRandom(x)]++;
+  const double d = chi2(c2, 52, draws);
+  TEST_ASSERT_TRUE(d < CHI2_HI_DF51 && d > CHI2_LO_DF51);
+}
+
 int main(int, char**) {
   UNITY_BEGIN();
   RUN_TEST(test_randBelow_rejects_biased_tail);
@@ -140,5 +190,8 @@ int main(int, char**) {
   RUN_TEST(test_shelf_selection_uniform_full_rack);
   RUN_TEST(test_shelf_selection_uniform_partial_rack);
   RUN_TEST(test_deal_whole_deck_first_and_last_uniform);
+  RUN_TEST(test_xoshiro_reference_vector);
+  RUN_TEST(test_xoshiro_seeding);
+  RUN_TEST(test_mixed_source_shelf_selection_uniform);
   return UNITY_END();
 }
