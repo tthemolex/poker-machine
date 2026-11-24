@@ -243,3 +243,9 @@ mass clears the lip and the card tips out.
   4 mm past the pinch line, and the 300 ms reverse pulls it back. The IR_LOAD beam is 5.0 mm before
   the rack face, 1.0 mm behind the pinch line and 10.9 mm in front of the feed line. All of this is
   checked in tools/cad_cardpath.py.
+
+## D-23 Launcher motor on 1+1 ribbon conductors (orchestrator)
+All 20 ribbon conductors stay ≤ 0.8 A continuous. The exception is the 130 launcher pair at spin-up: it is budgeted at 1.5 A for < 100 ms,
+and the firmware ramp (LAUNCH_RAMP_MS 120 ms) reduces that further. AWG28 handles that short pulse easily
+(the energy is far below the conductor's short-time thermal limit), so the harness stays at 2 × 10-way rather than growing the coil and
+the bearing spacer by ~2.5 mm for 2 × 12-way. Revisit if the ribbon gets warm on the prototype.
